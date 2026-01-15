@@ -43,9 +43,38 @@ This opens an interactive shell with all tools available. The project directory 
 
 | Command | Description |
 |---------|-------------|
+| `make setup` | Install pre-commit hooks |
+| `make lint` | Run linters on all files |
 | `make docker-build` | Build the FPGA toolchain container |
 | `make docker-shell` | Open interactive shell in container |
 | `make docker-down` | Stop and remove container |
+
+## Development Setup
+
+First, install [pre-commit](https://pre-commit.com/):
+
+```bash
+# Using pipx (recommended)
+pipx install pre-commit
+
+# Or using pip
+pip install pre-commit
+
+# Or using your package manager
+brew install pre-commit  # macOS
+apt install pre-commit   # Debian/Ubuntu
+```
+
+Then install the git hooks:
+
+```bash
+make setup
+```
+
+This enables automatic linting on commit:
+- Trailing whitespace and EOF fixes
+- YAML validation
+- Python formatting (Ruff)
 
 ## Project Structure
 
