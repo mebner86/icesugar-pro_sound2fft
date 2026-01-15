@@ -1,0 +1,25 @@
+services:
+  fpga-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: icesugar-pro-dev
+    container_name: fpga-toolchain
+
+    # Mount repo root directory
+    volumes:
+      - ..:/workspace
+
+    # Required for USB access to FPGA programmer
+    privileged: true
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+
+    # Keep container running for interactive use
+    stdin_open: true
+    tty: true
+
+    working_dir: /workspace
+
+    environment:
+      - TERM=xterm-256color

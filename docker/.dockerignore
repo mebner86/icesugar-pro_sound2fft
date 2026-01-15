@@ -1,0 +1,28 @@
+# Build artifacts
+*.bit
+*.svf
+*.json
+*.log
+
+# Simulation outputs
+*.vcd
+*.fst
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# IDE
+.vscode/
+*.swp
+*~
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore

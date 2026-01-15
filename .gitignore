@@ -1,0 +1,32 @@
+# Build artifacts
+build/
+*.bit
+*.svf
+*.config
+
+# Simulation outputs
+*.vcd
+*.fst
+*.vvp
+
+# Yosys/nextpnr intermediates
+*.json
+*.log
+*.rpt
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# IDE
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
