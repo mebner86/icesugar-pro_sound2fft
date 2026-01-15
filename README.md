@@ -74,6 +74,7 @@ make setup
 This enables automatic linting on commit:
 - Trailing whitespace and EOF fixes
 - YAML validation
+- Verilog/SystemVerilog linting (Verilator)
 - Python formatting (Ruff)
 
 ## Project Structure
