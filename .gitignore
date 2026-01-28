@@ -30,3 +30,6 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+# AI assistant memory
+CLAUDE.md

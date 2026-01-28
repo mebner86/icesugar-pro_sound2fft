@@ -1,0 +1,24 @@
+[*]
+[*] GTKWave Save File
+[*]
+[dumpfile] "projects/01_blinky/build/top_tb.vcd"
+[timestart] 0
+[size] 1200 600
+[pos] -1 -1
+*-16.000000 100000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top_tb.
+[sst_width] 210
+[signals_width] 150
+[sst_expanded] 1
+[sst_vpaned_height] 150
+@28
+top_tb.clk_25m
+top_tb.rst_n
+@22
+top_tb.dut.counter[23:0]
+@28
+top_tb.led_r
+top_tb.led_g
+top_tb.led_b
+[pattern_trace] 1
+[pattern_trace] 0

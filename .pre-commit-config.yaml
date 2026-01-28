@@ -12,7 +12,7 @@ repos:
       - id: mixed-line-ending
         args: ['--fix=lf']
 
-  # Verilog/SystemVerilog
+  # Verilog/SystemVerilog (excludes testbenches which use timing constructs)
   - repo: local
     hooks:
       - id: verilator-lint
@@ -20,6 +20,7 @@ repos:
         entry: verilator --lint-only -Wall
         language: system
         files: \.(v|sv|vh|svh)$
+        exclude: _tb\.(v|sv)$
 
   # Python
   - repo: https://github.com/astral-sh/ruff-pre-commit
