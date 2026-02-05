@@ -1,14 +1,14 @@
 # iCESugar-Pro pin constraints
-# ECP5-25F in csfBGA285 package
+# ECP5-25F in CABGA256 package
 
 # Clock - 25 MHz oscillator
 LOCATE COMP "clk_25m" SITE "P6";
 IOBUF PORT "clk_25m" IO_TYPE=LVCMOS33;
 FREQUENCY PORT "clk_25m" 25 MHZ;
 
-# User button (directly active, directly active, directly active, directly active as directly low = pressed)
-LOCATE COMP "rst_n" SITE "H16";
-IOBUF PORT "rst_n" IO_TYPE=LVCMOS33;
+# User button (active low with pull-up)
+LOCATE COMP "rst_n" SITE "L14";
+IOBUF PORT "rst_n" IO_TYPE=LVCMOS33 PULLMODE=UP;
 
 # Onboard RGB LED (active low)
 LOCATE COMP "led_r" SITE "B11";
