@@ -9,9 +9,20 @@ This project demonstrates real-time FFT visualization on an HDMI display, using 
 ## Requirements
 
 - Docker
+- Make
 - iCESugar-Pro FPGA board (ECP5-25F)
 - I2S MEMS microphone (e.g., INMP441)
 - HDMI display
+
+### Installing Make (Windows)
+
+If you don't have `make` installed, you can install it with:
+
+```bash
+winget install ezwinports.make
+```
+
+Restart your terminal after installation for the command to become available.
 
 ## Quick Start
 
