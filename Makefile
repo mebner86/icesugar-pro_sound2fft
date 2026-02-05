@@ -1,43 +1,63 @@
 # iCESugar-Pro Sound2FFT Project
 # Top-level Makefile
 
+# On Windows, force cmd.exe so ifeq branches match the active shell.
+# On Linux/macOS, Make defaults to /bin/sh which is correct.
+ifeq ($(OS),Windows_NT)
+SHELL := cmd.exe
+.SHELLFLAGS := /c
+endif
+
 # Project selection (use PROJECT=name to specify)
 PROJECT ?=
 PROJECTS_DIR := projects
 
-# List available projects
-AVAILABLE_PROJECTS := $(shell ls -d $(PROJECTS_DIR)/*/ 2>/dev/null | xargs -n1 basename)
+# Discover available projects (platform-independent, uses Make builtins)
+AVAILABLE_PROJECTS := $(patsubst $(PROJECTS_DIR)/%/,%,$(wildcard $(PROJECTS_DIR)/*/))
 
-.PHONY: help docker-build docker-shell docker-down setup lint build sim program clean list-projects
+# Docker commands
+DOCKER_COMPOSE := docker compose -f docker/docker-compose.yml
+DOCKER_RUN := $(DOCKER_COMPOSE) run --rm fpga-dev
 
+# Sub-targets for cleaning individual projects
+CLEAN_TARGETS := $(addprefix clean-,$(AVAILABLE_PROJECTS))
+
+.PHONY: help docker-build docker-shell docker-down setup lint build sim program clean list-projects $(CLEAN_TARGETS)
+
+# =============================================================================
 # Default target
+# =============================================================================
+
 help:
-	@echo "iCESugar-Pro Sound2FFT - Build System"
-	@echo ""
-	@echo "Project targets (use PROJECT=<name>):"
-	@echo "  make build PROJECT=01_blinky   - Build bitstream for project"
-	@echo "  make sim PROJECT=01_blinky     - Run simulation for project"
-	@echo "  make program PROJECT=01_blinky - Program FPGA with project"
-	@echo "  make clean PROJECT=01_blinky   - Clean project build files"
-	@echo "  make list-projects             - List available projects"
-	@echo ""
-	@echo "Setup:"
-	@echo "  make setup          - Install pre-commit hooks"
-	@echo "  make lint           - Run pre-commit on all files"
-	@echo ""
-	@echo "Docker targets:"
-	@echo "  make docker-build   - Build the FPGA toolchain container"
-	@echo "  make docker-shell   - Open interactive shell in container"
-	@echo "  make docker-down    - Stop and remove container"
+	$(info iCESugar-Pro Sound2FFT - Build System)
+	$(info )
+	$(info Project targets (use PROJECT=<name>):)
+	$(info   make build PROJECT=01_blinky   - Build bitstream for project)
+	$(info   make sim PROJECT=01_blinky     - Run simulation for project)
+	$(info   make program PROJECT=01_blinky - Program FPGA with project)
+	$(info   make clean PROJECT=01_blinky   - Clean project build files)
+	$(info   make list-projects             - List available projects)
+	$(info )
+	$(info Setup:)
+	$(info   make setup          - Install pre-commit hooks)
+	$(info   make lint           - Run pre-commit on all files)
+	$(info )
+	$(info Docker targets:)
+	$(info   make docker-build   - Build the FPGA toolchain container)
+	$(info   make docker-shell   - Open interactive shell in container)
+	$(info   make docker-down    - Stop and remove container)
+	@cd .
 
 # =============================================================================
 # Setup targets
 # =============================================================================
 
 setup:
+ifeq ($(OS),Windows_NT)
+	@where pre-commit >nul 2>nul || (echo Error: pre-commit is not installed. Install with: pip install pre-commit && exit /b 1)
+else
 	@command -v pre-commit >/dev/null 2>&1 || { \
 		echo "Error: pre-commit is not installed."; \
-		echo ""; \
 		echo "Install it with one of:"; \
 		echo "  pipx install pre-commit   (recommended)"; \
 		echo "  pip install pre-commit"; \
@@ -45,41 +65,34 @@ setup:
 		echo "  apt install pre-commit    (Debian/Ubuntu)"; \
 		exit 1; \
 	}
+endif
 	pre-commit install
 
 lint:
+ifeq ($(OS),Windows_NT)
+	@where pre-commit >nul 2>nul || (echo Error: pre-commit is not installed. Run "make setup" first. && exit /b 1)
+else
 	@command -v pre-commit >/dev/null 2>&1 || { \
 		echo "Error: pre-commit is not installed. Run 'make setup' first."; \
 		exit 1; \
 	}
+endif
 	pre-commit run --all-files
 
 # =============================================================================
 # Project targets
 # =============================================================================
 
-# Helper to check PROJECT is set
+# Validate PROJECT is set and exists (pure Make, no shell required)
 define check_project
-	@if [ -z "$(PROJECT)" ]; then \
-		echo "Error: PROJECT not specified."; \
-		echo "Usage: make $(1) PROJECT=<project_name>"; \
-		echo ""; \
-		echo "Available projects:"; \
-		for p in $(AVAILABLE_PROJECTS); do echo "  - $$p"; done; \
-		exit 1; \
-	fi
-	@if [ ! -d "$(PROJECTS_DIR)/$(PROJECT)" ]; then \
-		echo "Error: Project '$(PROJECT)' not found in $(PROJECTS_DIR)/"; \
-		echo ""; \
-		echo "Available projects:"; \
-		for p in $(AVAILABLE_PROJECTS); do echo "  - $$p"; done; \
-		exit 1; \
-	fi
+$(if $(PROJECT),,$(error PROJECT not specified. Usage: make $(1) PROJECT=<name>. Available: $(AVAILABLE_PROJECTS)))
+$(if $(wildcard $(PROJECTS_DIR)/$(PROJECT)/),,$(error Project '$(PROJECT)' not found in $(PROJECTS_DIR)/. Available: $(AVAILABLE_PROJECTS)))
 endef
 
 list-projects:
-	@echo "Available projects:"
-	@for p in $(AVAILABLE_PROJECTS); do echo "  - $$p"; done
+	$(info Available projects:)
+	$(foreach p,$(AVAILABLE_PROJECTS),$(info   - $(p)))
+	@cd .
 
 build:
 	$(call check_project,build)
@@ -94,23 +107,20 @@ program:
 	$(MAKE) -C $(PROJECTS_DIR)/$(PROJECT) program
 
 clean:
-ifndef PROJECT
-	@echo "Cleaning all projects..."
-	@for p in $(AVAILABLE_PROJECTS); do \
-		echo "Cleaning $$p..."; \
-		$(MAKE) -C $(PROJECTS_DIR)/$$p clean 2>/dev/null || true; \
-	done
-else
+ifdef PROJECT
 	$(call check_project,clean)
 	$(MAKE) -C $(PROJECTS_DIR)/$(PROJECT) clean
+else
+	$(info Cleaning all projects...)
+	@$(MAKE) --no-print-directory $(CLEAN_TARGETS)
 endif
+
+$(CLEAN_TARGETS): clean-%:
+	-@$(MAKE) --no-print-directory -C $(PROJECTS_DIR)/$* clean
 
 # =============================================================================
 # Docker targets
 # =============================================================================
-
-DOCKER_COMPOSE := docker compose -f docker/docker-compose.yml
-DOCKER_RUN := $(DOCKER_COMPOSE) run --rm fpga-dev
 
 docker-build:
 	$(DOCKER_COMPOSE) build
