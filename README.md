@@ -130,6 +130,13 @@ This enables automatic linting on commit:
 - Verilog/SystemVerilog linting (Verilator)
 - Python formatting (Ruff)
 
+## Projects
+
+| Project | Description |
+|---------|-------------|
+| `01_blinky` | LED blink test - basic I/O verification |
+| `02_hdmi_test` | HDMI test pattern output (480x800@60Hz color bars) |
+
 ## Project Structure
 
 ```
@@ -139,11 +146,8 @@ icesugar-pro_sound2fft/
 │   ├── Dockerfile        # FPGA toolchain container
 │   └── docker-compose.yml
 ├── projects/             # FPGA projects
-│   └── 01_blinky/        # LED blinky example
-│       ├── Makefile      # Project-specific build
-│       ├── blinky.v      # Top-level module
-│       ├── blinky_tb.v   # Testbench
-│       └── icesugar_pro.lpf  # Pin constraints
+│   ├── 01_blinky/        # LED blinky example
+│   └── 02_hdmi_test/     # HDMI test pattern generator
 └── README.md
 ```
 

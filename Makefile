@@ -88,14 +88,14 @@ program:
 clean:
 ifdef PROJECT
 	$(call check_project,clean)
-	$(MAKE) -C $(PROJECTS_DIR)/$(PROJECT) clean
+	$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$(PROJECT) clean
 else
 	$(info Cleaning all projects...)
 	@$(MAKE) --no-print-directory $(CLEAN_TARGETS)
 endif
 
 $(CLEAN_TARGETS): clean-%:
-	-@$(MAKE) --no-print-directory -C $(PROJECTS_DIR)/$* clean
+	-@$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$* clean
 
 # =============================================================================
 # Docker targets
