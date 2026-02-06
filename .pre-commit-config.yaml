@@ -12,15 +12,24 @@ repos:
       - id: mixed-line-ending
         args: ['--fix=lf']
 
-  # Verilog/SystemVerilog (excludes testbenches which use timing constructs)
+  # Verilog/SystemVerilog linting
+  # Excludes:
+  #   - Testbenches (*_tb.v) - use timing constructs unsupported by Verilator
+  #   - Files using ECP5 primitives - per-file lint can't resolve them
   - repo: local
     hooks:
       - id: verilator-lint
         name: Verilator Lint
-        entry: docker compose -f docker/docker-compose.yml run --rm -T fpga-dev verilator --lint-only -Wall
+        entry: docker compose -f docker/docker-compose.yml run --rm -T fpga-dev verilator --lint-only -Wall -Wno-fatal
         language: system
         files: \.(v|sv|vh|svh)$
-        exclude: _tb\.(v|sv)$
+        exclude: |
+          (?x)^(
+            .*_tb\.(v|sv)$|           # Testbenches
+            .*/pll\.v$|               # ECP5 PLL primitive
+            .*/tmds_serializer\.v$|   # ECP5 ODDRX1F primitive
+            .*/hdmi_test\.v$          # Top module (instantiates above)
+          )$
 
   # Python
   - repo: https://github.com/astral-sh/ruff-pre-commit

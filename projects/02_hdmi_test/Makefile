@@ -6,7 +6,7 @@ DEVICE = 25k
 PACKAGE = CABGA256
 
 # Source files
-VERILOG_SRC = hdmi_test.v
+VERILOG_SRC = hdmi_test.v pll.v video_timing.v test_pattern.v tmds_encoder.v tmds_serializer.v
 
 # Output files
 BUILD_DIR = build
