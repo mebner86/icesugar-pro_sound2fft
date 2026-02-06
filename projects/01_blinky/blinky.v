@@ -1,7 +1,7 @@
 // Blinky example for iCESugar-Pro (ECP5-25F)
 // Blinks the onboard LED at ~1Hz
 
-module top (
+module blinky (
     input  wire clk_25m,    // 25 MHz oscillator
     input  wire rst_n,      // Active-low reset
     output wire led_r,      // Red LED (active low)

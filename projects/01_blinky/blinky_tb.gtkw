@@ -1,0 +1,25 @@
+[*]
+[*] GTKWave Analyzer v3.3.104
+[*]
+[dumpfile] "build/blinky_tb.vcd"
+[savefile] "blinky_tb.gtkw"
+[timestart] 0
+[size] 1600 900
+[pos] -1 -1
+*-16.000000 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] blinky_tb.
+[sst_width] 250
+[signals_width] 200
+[sst_expanded] 1
+[sst_vpaned_height] 300
+@28
+blinky_tb.clk_25m
+blinky_tb.rst_n
+@29
+blinky_tb.led_r
+blinky_tb.led_g
+blinky_tb.led_b
+@28
+blinky_tb.dut.counter[23:0]
+[pattern_trace] 1
+[pattern_trace] 0

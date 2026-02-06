@@ -1,5 +1,7 @@
 # icesugar-pro_sound2fft
 
+[![CI](https://github.com/mebner86/icesugar-pro_sound2fft/actions/workflows/ci.yml/badge.svg)](https://github.com/mebner86/icesugar-pro_sound2fft/actions/workflows/ci.yml)
+
 FPGA FFT demo via HDMI from I2S microphone on the iCESugar-Pro (ECP5) board.
 
 ## Overview
@@ -63,7 +65,7 @@ make build PROJECT=01_blinky
 make sim PROJECT=01_blinky
 
 # View simulation waveforms (requires GTKWave on host)
-gtkwave projects/01_blinky/top_tb.gtkw
+gtkwave projects/01_blinky/blinky_tb.gtkw
 
 # Program the FPGA
 make program PROJECT=01_blinky
@@ -139,8 +141,8 @@ icesugar-pro_sound2fft/
 ├── projects/             # FPGA projects
 │   └── 01_blinky/        # LED blinky example
 │       ├── Makefile      # Project-specific build
-│       ├── top.v         # Top-level module
-│       ├── top_tb.v      # Testbench
+│       ├── blinky.v      # Top-level module
+│       ├── blinky_tb.v   # Testbench
 │       └── icesugar_pro.lpf  # Pin constraints
 └── README.md
 ```

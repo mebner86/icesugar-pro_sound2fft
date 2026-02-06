@@ -17,7 +17,7 @@ repos:
     hooks:
       - id: verilator-lint
         name: Verilator Lint
-        entry: verilator --lint-only -Wall
+        entry: docker compose -f docker/docker-compose.yml run --rm -T fpga-dev verilator --lint-only -Wall
         language: system
         files: \.(v|sv|vh|svh)$
         exclude: _tb\.(v|sv)$

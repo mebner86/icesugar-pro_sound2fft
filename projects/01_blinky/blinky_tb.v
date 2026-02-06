@@ -1,14 +1,14 @@
 // Testbench for blinky example
 `timescale 1ns / 1ps
 
-module top_tb;
+module blinky_tb;
 
     reg clk_25m;
     reg rst_n;
     wire led_r, led_g, led_b;
 
     // Instantiate the DUT
-    top dut (
+    blinky dut (
         .clk_25m(clk_25m),
         .rst_n(rst_n),
         .led_r(led_r),
@@ -22,8 +22,8 @@ module top_tb;
 
     // VCD dump
     initial begin
-        $dumpfile("build/top_tb.vcd");
-        $dumpvars(0, top_tb);
+        $dumpfile("build/blinky_tb.vcd");
+        $dumpvars(0, blinky_tb);
     end
 
     // Run simulation

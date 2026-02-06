@@ -1,12 +1,12 @@
 # Blinky Makefile for iCESugar-Pro (ECP5-25F)
 
-TOP = top
+TOP = blinky
 CONSTRAINTS = icesugar_pro.lpf
 DEVICE = 25k
 PACKAGE = CABGA256
 
 # Source files
-VERILOG_SRC = top.v
+VERILOG_SRC = blinky.v
 
 # Output files
 BUILD_DIR = build
