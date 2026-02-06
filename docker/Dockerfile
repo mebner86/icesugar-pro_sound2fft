@@ -37,11 +37,13 @@ RUN curl -L https://github.com/YosysHQ/oss-cad-suite-build/releases/download/${O
 # Add OSS CAD Suite to PATH
 ENV PATH="/opt/oss-cad-suite/bin:${PATH}"
 
-# Install Python tools for FPGA development
+# Install Python tools for FPGA development and linting
 RUN pip3 install --break-system-packages \
     amaranth \
     cocotb \
-    cocotb-bus
+    cocotb-bus \
+    pre-commit \
+    ruff
 
 # Create workspace directory
 WORKDIR /workspace
@@ -56,6 +58,13 @@ RUN mkdir -p /etc/udev/rules.d && \
 
 # Default to fpga user
 USER fpga
+
+# Mark /workspace as safe for git (needed for bind-mounted volumes with different ownership)
+RUN git config --global --add safe.directory /workspace
+
+# Pre-install pre-commit hook environments so they're cached in the image
+COPY --chown=fpga:fpga .pre-commit-config.yaml /tmp/.pre-commit-config.yaml
+RUN cd /tmp && git init && git config --global --add safe.directory /tmp && pre-commit install-hooks && rm -rf /tmp/.git
 
 # Verify installations
 RUN yosys --version && \

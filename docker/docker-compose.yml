@@ -1,8 +1,8 @@
 services:
   fpga-dev:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
     image: icesugar-pro-dev
     container_name: fpga-toolchain
 

@@ -38,9 +38,9 @@ help:
 	$(info   make clean PROJECT=01_blinky   - Clean project build files)
 	$(info   make list-projects             - List available projects)
 	$(info )
-	$(info Setup:)
+	$(info Setup (runs in Docker):)
 	$(info   make setup          - Install pre-commit hooks)
-	$(info   make lint           - Run pre-commit on all files)
+	$(info   make lint           - Run linters on all files)
 	$(info )
 	$(info Docker targets:)
 	$(info   make docker-build   - Build the FPGA toolchain container)
@@ -49,35 +49,14 @@ help:
 	@cd .
 
 # =============================================================================
-# Setup targets
+# Setup and lint targets (run inside Docker container)
 # =============================================================================
 
 setup:
-ifeq ($(OS),Windows_NT)
-	@where pre-commit >nul 2>nul || (echo Error: pre-commit is not installed. Install with: pip install pre-commit && exit /b 1)
-else
-	@command -v pre-commit >/dev/null 2>&1 || { \
-		echo "Error: pre-commit is not installed."; \
-		echo "Install it with one of:"; \
-		echo "  pipx install pre-commit   (recommended)"; \
-		echo "  pip install pre-commit"; \
-		echo "  brew install pre-commit   (macOS)"; \
-		echo "  apt install pre-commit    (Debian/Ubuntu)"; \
-		exit 1; \
-	}
-endif
-	pre-commit install
+	$(DOCKER_RUN) pre-commit install
 
 lint:
-ifeq ($(OS),Windows_NT)
-	@where pre-commit >nul 2>nul || (echo Error: pre-commit is not installed. Run "make setup" first. && exit /b 1)
-else
-	@command -v pre-commit >/dev/null 2>&1 || { \
-		echo "Error: pre-commit is not installed. Run 'make setup' first."; \
-		exit 1; \
-	}
-endif
-	pre-commit run --all-files
+	$(DOCKER_RUN) pre-commit run --all-files
 
 # =============================================================================
 # Project targets
