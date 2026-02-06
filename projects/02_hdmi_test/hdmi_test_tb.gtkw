@@ -1,0 +1,23 @@
+[*]
+[*] GTKWave Analyzer v3.3.104
+[*]
+[dumpfile] "build/hdmi_test_tb.vcd"
+[savefile] "hdmi_test_tb.gtkw"
+[timestart] 0
+[size] 1600 900
+[pos] -1 -1
+*-16.000000 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] hdmi_test_tb.
+[sst_width] 250
+[signals_width] 200
+[sst_expanded] 1
+[sst_vpaned_height] 300
+@28
+hdmi_test_tb.clk_25m
+hdmi_test_tb.rst_n
+@29
+hdmi_test_tb.led_r
+hdmi_test_tb.led_g
+hdmi_test_tb.led_b
+[pattern_trace] 1
+[pattern_trace] 0
