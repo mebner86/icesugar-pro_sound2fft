@@ -8,7 +8,7 @@ PACKAGE = CABGA256
 # Source files
 VERILOG_SRC = hdmi_test.v pll.v video_timing.v test_pattern.v tmds_encoder.v tmds_serializer.v
 
-# ECP5 primitive stubs for linting (local file with just the primitives we use)
+# ECP5 primitive stubs for linting and simulation
 ECP5_STUBS = ecp5_stubs.v
 
 # Output files
@@ -54,8 +54,8 @@ lint:
 sim: $(VCD)
 	@echo "Simulation complete: $(VCD)"
 
-$(VVP): $(VERILOG_SRC) $(SIM_SRC) | $(BUILD_DIR)
-	iverilog -o $@ $(VERILOG_SRC) $(SIM_SRC)
+$(VVP): $(ECP5_STUBS) $(VERILOG_SRC) $(SIM_SRC) | $(BUILD_DIR)
+	iverilog -o $@ $(ECP5_STUBS) $(VERILOG_SRC) $(SIM_SRC)
 
 $(VCD): $(VVP)
 	vvp $< -vcd
