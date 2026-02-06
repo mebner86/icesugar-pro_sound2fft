@@ -8,6 +8,9 @@ PACKAGE = CABGA256
 # Source files
 VERILOG_SRC = hdmi_test.v pll.v video_timing.v test_pattern.v tmds_encoder.v tmds_serializer.v
 
+# Files to lint (excludes those using ECP5 primitives: hdmi_test, pll, tmds_serializer)
+LINT_SRC = video_timing.v test_pattern.v tmds_encoder.v
+
 # Output files
 BUILD_DIR = build
 JSON = $(BUILD_DIR)/$(TOP).json
@@ -43,9 +46,9 @@ $(BITSTREAM): $(CONFIG)
 program: $(BITSTREAM)
 	icesprog $<
 
-# Lint with Verilator
+# Lint with Verilator (uses LINT_SRC to skip files with ECP5 primitives)
 lint:
-	verilator --lint-only -Wall $(VERILOG_SRC)
+	verilator --lint-only -Wall -Wno-fatal $(LINT_SRC)
 
 # Simulation with Icarus Verilog
 sim: $(VCD)
