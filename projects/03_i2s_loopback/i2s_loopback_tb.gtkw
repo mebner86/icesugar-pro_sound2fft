@@ -1,0 +1,46 @@
+[*]
+[*] GTKWave Analyzer v3.3.104
+[*]
+[dumpfile] "build/i2s_loopback_tb.vcd"
+[savefile] "i2s_loopback_tb.gtkw"
+[timestart] 0
+[size] 1600 900
+[pos] -1 -1
+*-16.000000 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] i2s_loopback_tb.
+[treeopen] i2s_loopback_tb.dut.
+[sst_width] 250
+[signals_width] 200
+[sst_expanded] 1
+[sst_vpaned_height] 300
+@28
+i2s_loopback_tb.clk_25m
+i2s_loopback_tb.rst_n
+@200
+-Internal
+@24
+i2s_loopback_tb.dut.bclk_counter[2:0]
+i2s_loopback_tb.dut.bit_counter[4:0]
+@200
+-SPH0645 Mic (I2S)
+@28
+i2s_loopback_tb.mic_bclk
+i2s_loopback_tb.mic_lrclk
+i2s_loopback_tb.mic_data
+i2s_loopback_tb.mic_sel
+@200
+-MAX98357A Amp (I2S)
+@28
+i2s_loopback_tb.amp_bclk
+i2s_loopback_tb.amp_lrclk
+i2s_loopback_tb.amp_din
+i2s_loopback_tb.amp_sd
+i2s_loopback_tb.amp_gain
+@200
+-LEDs
+@28
+i2s_loopback_tb.led_r
+i2s_loopback_tb.led_g
+i2s_loopback_tb.led_b
+[pattern_trace] 1
+[pattern_trace] 0

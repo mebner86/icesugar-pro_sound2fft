@@ -13,7 +13,8 @@ This project demonstrates real-time FFT visualization on an HDMI display, using 
 - Docker
 - Make
 - iCESugar-Pro FPGA board (ECP5-25F)
-- I2S MEMS microphone (e.g., INMP441)
+- I2S MEMS microphone (e.g., SPH0645)
+- I2S amplifier (e.g., MAX98357A)
 - HDMI display
 
 ### Installing Make (Windows)
@@ -136,6 +137,7 @@ This enables automatic linting on commit:
 |---------|-------------|
 | `01_blinky` | LED blink test - basic I/O verification |
 | `02_hdmi_test` | HDMI test pattern output (480x800@60Hz color bars) |
+| `03_i2s_loopback` | I2S mic-to-amp audio passthrough (SPH0645 → MAX98357A) |
 
 ## Project Structure
 
@@ -147,7 +149,8 @@ icesugar-pro_sound2fft/
 │   └── docker-compose.yml
 ├── projects/             # FPGA projects
 │   ├── 01_blinky/        # LED blinky example
-│   └── 02_hdmi_test/     # HDMI test pattern generator
+│   ├── 02_hdmi_test/     # HDMI test pattern generator
+│   └── 03_i2s_loopback/  # I2S mic-to-amp loopback
 └── README.md
 ```
 
