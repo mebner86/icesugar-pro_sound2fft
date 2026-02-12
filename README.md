@@ -55,6 +55,8 @@ This opens an interactive shell with all tools available. The project directory 
 
 ### Building a Project
 
+The project is specified as a positional argument — either the full name or any unambiguous prefix (e.g. `01` for `01_blinky`).
+
 ```bash
 # List available projects
 make list
@@ -62,34 +64,33 @@ make list
 # Build all projects
 make build
 
-# Build a single project
-make build PROJECT=01_blinky
+# Build a single project (full name or prefix)
+make build 01_blinky
+make build 01
 
 # Run simulation
-make sim PROJECT=01_blinky
+make sim 01
 
 # View simulation waveforms (requires GTKWave on host)
 gtkwave projects/01_blinky/blinky_tb.gtkw
 
 # Program the FPGA
-make program PROJECT=01_blinky
+make program 01
 
 # Clean build artifacts
-make clean PROJECT=01_blinky  # Single project
-make clean                     # All projects
+make clean 01    # Single project
+make clean       # All projects
 ```
 
 ### Available Make Commands
 
 | Command | Description |
 |---------|-------------|
-| `make build` | Build all projects |
-| `make build PROJECT=<name>` | Build bitstream for a project |
-| `make sim PROJECT=<name>` | Run simulation for a project |
-| `make program PROJECT=<name>` | Program FPGA with a project |
-| `make clean` | Clean all projects |
-| `make clean PROJECT=<name>` | Clean project build files |
 | `make list` | List available projects |
+| `make build [<project>]` | Build bitstream (or all) |
+| `make sim [<project>]` | Run simulation (or all) |
+| `make clean [<project>]` | Clean build files (or all) |
+| `make program <project>` | Program FPGA |
 | `make setup` | Install pre-commit hooks |
 | `make lint` | Run linters on all files |
 | `make docker-build` | Build the FPGA toolchain container |
