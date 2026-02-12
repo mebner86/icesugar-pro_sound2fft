@@ -142,6 +142,7 @@ This enables automatic linting on commit:
 | `01_blinky` | LED blink test - basic I/O verification |
 | `02_hdmi_test` | HDMI test pattern output (480x800@60Hz color bars) |
 | `03_i2s_loopback` | I2S mic-to-amp audio passthrough (SPH0645 → MAX98357A) |
+| `04_hdmi_graph` | HDMI line graph display (800x480@60Hz landscape) |
 
 ## Project Structure
 
@@ -153,13 +154,16 @@ icesugar-pro_sound2fft/
 │   └── docker-compose.yml
 ├── rtl/                  # Shared RTL modules
 │   ├── ecp5_stubs.v      # ECP5 primitive stubs for simulation
+│   ├── graph_renderer.v  # Filled line graph renderer
+│   ├── pll.v             # PLL for pixel/shift clocks
 │   ├── tmds_encoder.v    # DVI/HDMI 8b/10b TMDS encoder
 │   ├── tmds_serializer.v # 10:1 DDR TMDS serializer
 │   └── video_timing.v    # Video sync/timing generator
 ├── projects/             # FPGA projects
 │   ├── 01_blinky/        # LED blinky example
 │   ├── 02_hdmi_test/     # HDMI test pattern generator
-│   └── 03_i2s_loopback/  # I2S mic-to-amp loopback
+│   ├── 03_i2s_loopback/  # I2S mic-to-amp loopback
+│   └── 04_hdmi_graph/    # HDMI line graph display
 └── README.md
 ```
 

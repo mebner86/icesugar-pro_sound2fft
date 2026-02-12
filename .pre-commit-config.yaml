@@ -28,7 +28,8 @@ repos:
             .*_tb\.(v|sv)$|           # Testbenches
             .*/pll\.v$|               # ECP5 PLL primitive
             .*/tmds_serializer\.v$|   # ECP5 ODDRX1F primitive
-            .*/hdmi_test\.v$          # Top module (instantiates above)
+            .*/hdmi_test\.v$|          # Top module (instantiates above)
+            .*/hdmi_graph\.v$         # Top module (instantiates above)
           )$
 
   # Python

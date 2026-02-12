@@ -1,30 +1,28 @@
-// Video Timing Generator for 480x800@60Hz
-// Active: 480x800, Total: 600x833
+// Video Timing Generator
+// Default: 480x800@60Hz (portrait), parameterizable for other modes
 
-module video_timing (
+module video_timing #(
+    parameter H_ACTIVE      = 480,
+    parameter H_FRONT_PORCH = 24,
+    parameter H_SYNC        = 48,
+    parameter H_BACK_PORCH  = 48,
+    parameter H_TOTAL       = 600,
+
+    parameter V_ACTIVE      = 800,
+    parameter V_FRONT_PORCH = 3,
+    parameter V_SYNC        = 5,
+    parameter V_BACK_PORCH  = 25,
+    parameter V_TOTAL       = 833
+) (
     input  wire clk_pixel,
     input  wire rst_n,
 
     output wire hsync,
     output wire vsync,
     output wire active,       // High during active video
-    output wire [9:0] pixel_x, // 0-479 during active
-    output wire [9:0] pixel_y  // 0-799 during active
+    output wire [9:0] pixel_x, // Horizontal pixel coordinate during active
+    output wire [9:0] pixel_y  // Vertical pixel coordinate during active
 );
-
-    // Horizontal timing (active low sync)
-    localparam H_ACTIVE      = 480;
-    localparam H_FRONT_PORCH = 24;
-    localparam H_SYNC        = 48;
-    localparam H_BACK_PORCH  = 48;
-    localparam H_TOTAL       = 600;
-
-    // Vertical timing (active low sync)
-    localparam V_ACTIVE      = 800;
-    localparam V_FRONT_PORCH = 3;
-    localparam V_SYNC        = 5;
-    localparam V_BACK_PORCH  = 25;
-    localparam V_TOTAL       = 833;
 
     // Sync pulse positions
     localparam H_SYNC_START = H_ACTIVE + H_FRONT_PORCH;

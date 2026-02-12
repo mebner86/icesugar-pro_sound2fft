@@ -1,5 +1,5 @@
-// PLL for HDMI timing - 480x800@60Hz
-// Input:  25 MHz
+// PLL for HDMI pixel and shift clocks
+// Input:  25 MHz (iCESugar-Pro board oscillator)
 // Output: 30 MHz pixel clock, 150 MHz shift clock (5x for DDR TMDS)
 //
 // VCO = 25 MHz × 6 × 4 = 600 MHz

@@ -1,6 +1,6 @@
-# HDMI Test Pattern Makefile for iCESugar-Pro (ECP5-25F)
+# HDMI Graph Display Makefile for iCESugar-Pro (ECP5-25F)
 
-TOP = hdmi_test
+TOP = hdmi_graph
 CONSTRAINTS = icesugar_pro.lpf
 DEVICE = 25k
 PACKAGE = CABGA256
@@ -9,8 +9,9 @@ PACKAGE = CABGA256
 RTL_DIR = ../../rtl
 
 # Source files
-VERILOG_SRC = hdmi_test.v test_pattern.v \
-              $(RTL_DIR)/pll.v $(RTL_DIR)/video_timing.v $(RTL_DIR)/tmds_encoder.v $(RTL_DIR)/tmds_serializer.v
+VERILOG_SRC = hdmi_graph.v graph_data_rom.v \
+              $(RTL_DIR)/pll.v $(RTL_DIR)/graph_renderer.v \
+              $(RTL_DIR)/video_timing.v $(RTL_DIR)/tmds_encoder.v $(RTL_DIR)/tmds_serializer.v
 
 # ECP5 primitive stubs for linting and simulation
 ECP5_STUBS = $(RTL_DIR)/ecp5_stubs.v
@@ -34,8 +35,8 @@ all: $(BITSTREAM)
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-# Synthesis with Yosys
-$(JSON): $(VERILOG_SRC) | $(BUILD_DIR)
+# Synthesis with Yosys (depends on hex data file for ROM initialization)
+$(JSON): $(VERILOG_SRC) fft_test_data.hex | $(BUILD_DIR)
 	yosys -p "read_verilog $(VERILOG_SRC); synth_ecp5 -top $(TOP) -json $@"
 
 # Place and Route with nextpnr
