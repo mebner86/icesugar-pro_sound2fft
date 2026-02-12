@@ -98,10 +98,10 @@ clk_25m ──► PLL ──┬─► clk_pixel (30 MHz) ──► Video Timing 
 |------|-------------|
 | `hdmi_test.v` | Top module - instantiates and connects all components |
 | `pll.v` | ECP5 PLL - generates pixel and shift clocks from 25 MHz |
-| `video_timing.v` | H/V sync, blanking, and pixel coordinate generation |
 | `test_pattern.v` | 8 vertical color bars (white, yellow, cyan, green, magenta, red, blue, black) |
-| `tmds_encoder.v` | DVI-compliant 8b/10b encoding with DC balance |
-| `tmds_serializer.v` | 10:1 DDR serialization using ODDRX1F primitives |
+| `../../rtl/video_timing.v` | H/V sync, blanking, and pixel coordinate generation |
+| `../../rtl/tmds_encoder.v` | DVI-compliant 8b/10b encoding with DC balance |
+| `../../rtl/tmds_serializer.v` | 10:1 DDR serialization using ODDRX1F primitives |
 
 ### TMDS Output
 

@@ -19,10 +19,11 @@ AVAILABLE_PROJECTS := $(patsubst $(PROJECTS_DIR)/%/,%,$(wildcard $(PROJECTS_DIR)
 DOCKER_COMPOSE := docker compose -f docker/docker-compose.yml
 DOCKER_RUN := $(DOCKER_COMPOSE) run --rm fpga-dev
 
-# Sub-targets for cleaning individual projects
+# Sub-targets for building/cleaning individual projects
+BUILD_TARGETS := $(addprefix build-,$(AVAILABLE_PROJECTS))
 CLEAN_TARGETS := $(addprefix clean-,$(AVAILABLE_PROJECTS))
 
-.PHONY: help docker-build docker-shell docker-down setup lint build sim program clean list-projects $(CLEAN_TARGETS)
+.PHONY: help docker-build docker-shell docker-down setup lint build sim program clean list $(BUILD_TARGETS) $(CLEAN_TARGETS)
 
 # =============================================================================
 # Default target
@@ -31,12 +32,14 @@ CLEAN_TARGETS := $(addprefix clean-,$(AVAILABLE_PROJECTS))
 help:
 	$(info iCESugar-Pro Sound2FFT - Build System)
 	$(info )
-	$(info Project targets (use PROJECT=<name>):)
+	$(info Project targets (use PROJECT=<name> or omit for all):)
+	$(info   make build                     - Build all projects)
 	$(info   make build PROJECT=01_blinky   - Build bitstream for project)
 	$(info   make sim PROJECT=01_blinky     - Run simulation for project)
 	$(info   make program PROJECT=01_blinky - Program FPGA with project)
+	$(info   make clean                     - Clean all projects)
 	$(info   make clean PROJECT=01_blinky   - Clean project build files)
-	$(info   make list-projects             - List available projects)
+	$(info   make list             - List available projects)
 	$(info )
 	$(info Setup (runs in Docker):)
 	$(info   make setup          - Install pre-commit hooks)
@@ -68,14 +71,22 @@ $(if $(PROJECT),,$(error PROJECT not specified. Usage: make $(1) PROJECT=<name>.
 $(if $(wildcard $(PROJECTS_DIR)/$(PROJECT)/),,$(error Project '$(PROJECT)' not found in $(PROJECTS_DIR)/. Available: $(AVAILABLE_PROJECTS)))
 endef
 
-list-projects:
+list:
 	$(info Available projects:)
 	$(foreach p,$(AVAILABLE_PROJECTS),$(info   - $(p)))
 	@cd .
 
 build:
+ifdef PROJECT
 	$(call check_project,build)
 	$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$(PROJECT) all
+else
+	$(info Building all projects...)
+	@$(MAKE) --no-print-directory $(BUILD_TARGETS)
+endif
+
+$(BUILD_TARGETS): build-%:
+	-@$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$* all
 
 sim:
 	$(call check_project,sim)

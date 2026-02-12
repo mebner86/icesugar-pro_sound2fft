@@ -57,9 +57,12 @@ This opens an interactive shell with all tools available. The project directory 
 
 ```bash
 # List available projects
-make list-projects
+make list
 
-# Build a project (inside container or with tools installed)
+# Build all projects
+make build
+
+# Build a single project
 make build PROJECT=01_blinky
 
 # Run simulation
@@ -80,12 +83,13 @@ make clean                     # All projects
 
 | Command | Description |
 |---------|-------------|
+| `make build` | Build all projects |
 | `make build PROJECT=<name>` | Build bitstream for a project |
 | `make sim PROJECT=<name>` | Run simulation for a project |
 | `make program PROJECT=<name>` | Program FPGA with a project |
-| `make clean PROJECT=<name>` | Clean project build files |
 | `make clean` | Clean all projects |
-| `make list-projects` | List available projects |
+| `make clean PROJECT=<name>` | Clean project build files |
+| `make list` | List available projects |
 | `make setup` | Install pre-commit hooks |
 | `make lint` | Run linters on all files |
 | `make docker-build` | Build the FPGA toolchain container |
@@ -147,6 +151,11 @@ icesugar-pro_sound2fft/
 ├── docker/
 │   ├── Dockerfile        # FPGA toolchain container
 │   └── docker-compose.yml
+├── rtl/                  # Shared RTL modules
+│   ├── ecp5_stubs.v      # ECP5 primitive stubs for simulation
+│   ├── tmds_encoder.v    # DVI/HDMI 8b/10b TMDS encoder
+│   ├── tmds_serializer.v # 10:1 DDR TMDS serializer
+│   └── video_timing.v    # Video sync/timing generator
 ├── projects/             # FPGA projects
 │   ├── 01_blinky/        # LED blinky example
 │   ├── 02_hdmi_test/     # HDMI test pattern generator
