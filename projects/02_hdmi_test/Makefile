@@ -5,11 +5,15 @@ CONSTRAINTS = icesugar_pro.lpf
 DEVICE = 25k
 PACKAGE = CABGA256
 
+# Shared RTL modules
+RTL_DIR = ../../rtl
+
 # Source files
-VERILOG_SRC = hdmi_test.v pll.v video_timing.v test_pattern.v tmds_encoder.v tmds_serializer.v
+VERILOG_SRC = hdmi_test.v pll.v test_pattern.v \
+              $(RTL_DIR)/video_timing.v $(RTL_DIR)/tmds_encoder.v $(RTL_DIR)/tmds_serializer.v
 
 # ECP5 primitive stubs for linting and simulation
-ECP5_STUBS = ecp5_stubs.v
+ECP5_STUBS = $(RTL_DIR)/ecp5_stubs.v
 
 # Output files
 BUILD_DIR = build
