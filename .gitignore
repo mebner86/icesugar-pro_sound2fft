@@ -32,5 +32,9 @@ venv/
 Thumbs.db
 nul
 
-# AI assistant memory
+# Local files (not tracked)
+local/
+
+# AI assistant
 CLAUDE.md
+.claude/

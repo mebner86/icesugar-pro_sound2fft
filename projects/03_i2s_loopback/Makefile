@@ -5,8 +5,12 @@ CONSTRAINTS = icesugar_pro.lpf
 DEVICE = 25k
 PACKAGE = CABGA256
 
+# Shared RTL modules
+RTL_DIR = ../../rtl
+
 # Source files
-VERILOG_SRC = i2s_loopback.v
+VERILOG_SRC = i2s_loopback.v \
+              $(RTL_DIR)/i2s_clkgen.v $(RTL_DIR)/i2s_rx.v $(RTL_DIR)/i2s_tx.v
 
 # Output files
 BUILD_DIR = build

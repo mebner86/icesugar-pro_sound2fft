@@ -1,5 +1,7 @@
 // I2S Loopback for iCESugar-Pro (ECP5-25F)
-// Reads audio from SPH0645 microphone and sends it to MAX98357A amplifier
+// Reads audio from SPH0645 microphone, deserializes into parallel samples,
+// then re-serializes and sends to MAX98357A amplifier.
+// Validates the reusable i2s_clkgen, i2s_rx, and i2s_tx modules.
 
 module i2s_loopback (
     input  wire clk_25m,    // 25 MHz oscillator
@@ -25,58 +27,88 @@ module i2s_loopback (
 );
 
     // -------------------------------------------------------------------------
-    // BCLK generation: 25 MHz / 8 = 3.125 MHz
+    // I2S clock generation: 25 MHz / 8 = 3.125 MHz BCLK, ~48.8 kHz sample rate
     // -------------------------------------------------------------------------
-    reg [2:0] bclk_counter;
-    reg       bclk_reg;
+    wire bclk;
+    wire lrclk;
+    wire bclk_falling;
+
+    i2s_clkgen #(
+        .CLK_DIV(4)
+    ) clkgen (
+        .clk          (clk_25m),
+        .rst_n        (rst_n),
+        .bclk         (bclk),
+        .lrclk        (lrclk),
+        .bclk_falling (bclk_falling)
+    );
+
+    // -------------------------------------------------------------------------
+    // I2S receiver: deserialize mic data into parallel samples
+    // -------------------------------------------------------------------------
+    wire [23:0] rx_left_data;
+    wire        rx_left_valid;
+    wire [23:0] rx_right_data;
+    wire        rx_right_valid;
+
+    i2s_rx #(
+        .DATA_BITS(24)
+    ) rx (
+        .clk          (clk_25m),
+        .rst_n        (rst_n),
+        .bclk_falling (bclk_falling),
+        .lrclk        (lrclk),
+        .sdata        (mic_data),
+        .left_data    (rx_left_data),
+        .left_valid   (rx_left_valid),
+        .right_data   (rx_right_data),
+        .right_valid  (rx_right_valid)
+    );
+
+    // -------------------------------------------------------------------------
+    // Sample registers: hold latest samples for the transmitter
+    // -------------------------------------------------------------------------
+    reg [23:0] left_sample;
+    reg [23:0] right_sample;
 
     always @(posedge clk_25m or negedge rst_n) begin
         if (!rst_n) begin
-            bclk_counter <= 3'd0;
-            bclk_reg     <= 1'b0;
-        end else if (bclk_counter == 3'd3) begin
-            bclk_counter <= 3'd0;
-            bclk_reg     <= ~bclk_reg;
+            left_sample  <= 24'd0;
+            right_sample <= 24'd0;
         end else begin
-            bclk_counter <= bclk_counter + 3'd1;
+            if (rx_left_valid)
+                left_sample <= rx_left_data;
+            if (rx_right_valid)
+                right_sample <= rx_right_data;
         end
     end
 
     // -------------------------------------------------------------------------
-    // LRCLK generation: toggles every 32 BCLKs (64 per frame = ~48.8 kHz)
+    // I2S transmitter: re-serialize parallel samples to amp
     // -------------------------------------------------------------------------
-    reg [4:0] bit_counter;
-    reg       lrclk_reg;
+    wire tx_sdata;
 
-    wire bclk_falling = (bclk_counter == 3'd3) && bclk_reg;
+    i2s_tx #(
+        .DATA_BITS(24)
+    ) tx (
+        .clk          (clk_25m),
+        .rst_n        (rst_n),
+        .bclk_falling (bclk_falling),
+        .lrclk        (lrclk),
+        .left_data    (left_sample),
+        .right_data   (24'd0),       // Mic is left-only; zero right to avoid noise
+        .sdata        (tx_sdata)
+    );
 
-    always @(posedge clk_25m or negedge rst_n) begin
-        if (!rst_n) begin
-            bit_counter <= 5'd0;
-            lrclk_reg   <= 1'b0;
-        end else if (bclk_falling) begin
-            if (bit_counter == 5'd31) begin
-                bit_counter <= 5'd0;
-                lrclk_reg   <= ~lrclk_reg;
-            end else begin
-                bit_counter <= bit_counter + 5'd1;
-            end
-        end
-    end
+    assign amp_din = tx_sdata;
 
     // -------------------------------------------------------------------------
-    // I2S clock outputs (same signal to both devices via separate pins)
+    // I2S clock outputs (same clocks to both mic and amp)
     // -------------------------------------------------------------------------
-    assign mic_bclk  = bclk_reg;
-    assign amp_bclk  = bclk_reg;
-    assign mic_lrclk = lrclk_reg;
-    assign amp_lrclk = lrclk_reg;
-
-    // -------------------------------------------------------------------------
-    // Data passthrough: mic DOUT → amp DIN
-    // SPH0645 outputs on falling BCLK, MAX98357A latches on rising BCLK
-    // -------------------------------------------------------------------------
-    assign amp_din = mic_data;
+    assign mic_bclk  = bclk;
+    assign amp_bclk  = bclk;
+    assign mic_lrclk = lrclk;
+    assign amp_lrclk = lrclk;
 
     // -------------------------------------------------------------------------
     // Control pins
@@ -89,7 +121,7 @@ module i2s_loopback (
     // Status LEDs (active low)
     // -------------------------------------------------------------------------
     assign led_r = 1'b1;       // Off
-    assign led_g = 1'b0;       // On: indicates running
+    assign led_g = 1'b0;       // On: running
     assign led_b = 1'b1;       // Off
 
 endmodule

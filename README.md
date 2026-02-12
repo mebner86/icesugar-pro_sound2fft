@@ -12,10 +12,14 @@ This project demonstrates real-time FFT visualization on an HDMI display, using 
 
 - Docker
 - Make
-- iCESugar-Pro FPGA board (ECP5-25F)
-- I2S MEMS microphone (e.g., SPH0645)
-- I2S amplifier (e.g., MAX98357A)
-- HDMI display: [Waveshare 3.2inch HDMI LCD (H)](https://www.waveshare.com/3.2inch-hdmi-lcd-h.htm) ([Wiki](https://www.waveshare.com/wiki/3.2inch_HDMI_LCD_(H)))
+- iCESugar-Pro FPGA board ([ECP5-25F](https://github.com/wuxx/icesugar-pro))
+- I2S MEMS microphone (e.g., [SPH0645](https://www.adafruit.com/product/3421))
+- I2S amplifier (e.g., [MAX98357A](https://www.adafruit.com/product/3006))
+- HDMI display (e.g., [Waveshare 3.2inch HDMI LCD (H)](https://www.waveshare.com/3.2inch-hdmi-lcd-h.htm))
+
+### Recommended
+
+- [GTKWave](https://gtkwave.sourceforge.net/) - for viewing simulation waveforms
 
 ### Installing Make (Windows)
 
@@ -142,7 +146,7 @@ This enables automatic linting on commit:
 |---------|-------------|
 | `01_blinky` | LED blink test - basic I/O verification |
 | `02_hdmi_test` | HDMI test pattern output (480x800@60Hz color bars) |
-| `03_i2s_loopback` | I2S mic-to-amp audio passthrough (SPH0645 → MAX98357A) |
+| `03_i2s_loopback` | I2S mic-to-amp loopback via parallel samples (SPH0645 → MAX98357A) |
 | `04_hdmi_graph` | HDMI line graph display (portrait timing, rotated to landscape) |
 
 ## Project Structure
@@ -156,6 +160,9 @@ icesugar-pro_sound2fft/
 ├── rtl/                  # Shared RTL modules
 │   ├── ecp5_stubs.v      # ECP5 primitive stubs for simulation
 │   ├── graph_renderer.v  # Filled line graph renderer
+│   ├── i2s_clkgen.v      # I2S BCLK/LRCLK clock generator
+│   ├── i2s_rx.v          # I2S serial-to-parallel receiver
+│   ├── i2s_tx.v          # I2S parallel-to-serial transmitter
 │   ├── pll.v             # PLL for pixel/shift clocks
 │   ├── tmds_encoder.v    # DVI/HDMI 8b/10b TMDS encoder
 │   ├── tmds_serializer.v # 10:1 DDR TMDS serializer
@@ -171,3 +178,7 @@ icesugar-pro_sound2fft/
 ## License
 
 See [LICENSE](LICENSE) file.
+
+---
+
+Built with [Claude Code](https://claude.ai/claude-code)
