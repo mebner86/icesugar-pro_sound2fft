@@ -15,7 +15,7 @@ This project demonstrates real-time FFT visualization on an HDMI display, using 
 - iCESugar-Pro FPGA board (ECP5-25F)
 - I2S MEMS microphone (e.g., SPH0645)
 - I2S amplifier (e.g., MAX98357A)
-- HDMI display
+- HDMI display: [Waveshare 3.2inch HDMI LCD (H)](https://www.waveshare.com/3.2inch-hdmi-lcd-h.htm) ([Wiki](https://www.waveshare.com/wiki/3.2inch_HDMI_LCD_(H)))
 
 ### Installing Make (Windows)
 
@@ -142,7 +142,7 @@ This enables automatic linting on commit:
 | `01_blinky` | LED blink test - basic I/O verification |
 | `02_hdmi_test` | HDMI test pattern output (480x800@60Hz color bars) |
 | `03_i2s_loopback` | I2S mic-to-amp audio passthrough (SPH0645 → MAX98357A) |
-| `04_hdmi_graph` | HDMI line graph display (800x480@60Hz landscape) |
+| `04_hdmi_graph` | HDMI line graph display (portrait timing, rotated to landscape) |
 
 ## Project Structure
 

@@ -1,5 +1,6 @@
 // HDMI Graph Display for iCESugar-Pro
-// Outputs a filled line graph via HDMI at 800x480@60Hz (landscape)
+// Uses portrait 480x800 timing (same as the display's native mode) and
+// rotates coordinates so the graph appears correct in landscape orientation.
 // Static test data from ROM; designed for later live FFT connection.
 
 module hdmi_graph (
@@ -34,23 +35,12 @@ module hdmi_graph (
     wire rst_sync_n = rst_n & pll_locked;
 
     // ==========================================================================
-    // Video Timing (800x480@60Hz landscape)
+    // Video Timing (480x800 portrait - display's native mode)
     // ==========================================================================
     wire hsync, vsync, active;
     wire [9:0] pixel_x, pixel_y;
 
-    video_timing #(
-        .H_ACTIVE(800),
-        .H_FRONT_PORCH(40),
-        .H_SYNC(48),
-        .H_BACK_PORCH(40),
-        .H_TOTAL(928),
-        .V_ACTIVE(480),
-        .V_FRONT_PORCH(13),
-        .V_SYNC(3),
-        .V_BACK_PORCH(42),
-        .V_TOTAL(538)
-    ) timing_inst (
+    video_timing timing_inst (
         .clk_pixel(clk_pixel),
         .rst_n(rst_sync_n),
         .hsync(hsync),
@@ -59,6 +49,16 @@ module hdmi_graph (
         .pixel_x(pixel_x),
         .pixel_y(pixel_y)
     );
+
+    // ==========================================================================
+    // Coordinate rotation: portrait (480x800) → landscape (800x480)
+    // The display is physically rotated 90° CCW for landscape viewing.
+    // If the image appears mirrored, use CW rotation instead:
+    //   wire [9:0] land_x = 10'd799 - pixel_y;
+    //   wire [9:0] land_y = pixel_x;
+    // ==========================================================================
+    wire [9:0] land_x = pixel_y;
+    wire [9:0] land_y = 10'd479 - pixel_x;
 
     // ==========================================================================
     // Graph Data ROM (static test spectrum)
@@ -80,8 +80,8 @@ module hdmi_graph (
     graph_renderer renderer_inst (
         .clk_pixel(clk_pixel),
         .rst_n(rst_sync_n),
-        .pixel_x(pixel_x),
-        .pixel_y(pixel_y),
+        .pixel_x(land_x),
+        .pixel_y(land_y),
         .active(active),
         .data_addr(graph_addr),
         .data_value(graph_data),
