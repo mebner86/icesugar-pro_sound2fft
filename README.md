@@ -4,6 +4,10 @@
 
 FPGA FFT demo via HDMI from I2S microphone on the iCESugar-Pro (ECP5) board.
 
+
+https://github.com/user-attachments/assets/a4d3b1ac-cda3-45de-9872-42211985f9db
+
+
 ## Overview
 
 This project demonstrates real-time FFT visualization on an HDMI display, using audio input from an I2S microphone. It targets the iCESugar-Pro FPGA board and uses a fully open source toolchain.
