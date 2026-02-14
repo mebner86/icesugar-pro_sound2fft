@@ -29,7 +29,8 @@ repos:
             .*/pll\.v$|               # ECP5 PLL primitive
             .*/tmds_serializer\.v$|   # ECP5 ODDRX1F primitive
             .*/hdmi_test\.v$|          # Top module (instantiates above)
-            .*/hdmi_graph\.v$         # Top module (instantiates above)
+            .*/hdmi_graph\.v$|        # Top module (instantiates above)
+            .*/i2s_loopback\.v$       # Top module (instantiates shared RTL)
           )$
 
   # Python
