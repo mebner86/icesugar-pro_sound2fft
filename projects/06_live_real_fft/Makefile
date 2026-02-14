@@ -1,6 +1,6 @@
-# Live FFT Spectrum Display Makefile for iCESugar-Pro (ECP5-25F)
+# Live Real FFT Spectrum Display Makefile for iCESugar-Pro (ECP5-25F)
 
-TOP = live_fft
+TOP = live_real_fft
 CONSTRAINTS = icesugar_pro.lpf
 DEVICE = 25k
 PACKAGE = CABGA256
@@ -9,8 +9,8 @@ PACKAGE = CABGA256
 RTL_DIR = ../../rtl
 
 # Source files
-VERILOG_SRC = live_fft.v \
-              $(RTL_DIR)/display_ram.v $(RTL_DIR)/fft256.v \
+VERILOG_SRC = live_real_fft.v \
+              $(RTL_DIR)/display_ram.v $(RTL_DIR)/fft_real512.v \
               $(RTL_DIR)/i2s_clkgen.v $(RTL_DIR)/i2s_rx.v \
               $(RTL_DIR)/pll.v $(RTL_DIR)/graph_renderer.v \
               $(RTL_DIR)/video_timing.v $(RTL_DIR)/tmds_encoder.v $(RTL_DIR)/tmds_serializer.v

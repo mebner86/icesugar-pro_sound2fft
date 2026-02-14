@@ -32,7 +32,8 @@ repos:
             .*/hdmi_test\.v$|         # Instantiates pll, tmds_*, video_timing
             .*/hdmi_graph\.v$|        # Instantiates pll, tmds_*, graph_renderer
             .*/i2s_loopback\.v$|      # Instantiates i2s_clkgen, i2s_rx, i2s_tx
-            .*/live_fft\.v$           # Instantiates pll, fft256, i2s_*, tmds_*
+            .*/live_fft\.v$|          # Instantiates pll, fft256, i2s_*, tmds_*
+            .*/live_real_fft\.v$     # Instantiates pll, fft_real512, i2s_*, tmds_*
           )$
 
   # Python
