@@ -34,7 +34,21 @@ Restart your terminal after installation for the command to become available.
 
 ## Quick Start
 
-### 1. Build the Development Container
+### 1. Set Up Python Environment
+
+Python is used for twiddle-factor generation, test data scripts, and pre-commit hooks. Create a virtual environment and install dependencies:
+
+```bash
+python -m venv .venv
+
+# Activate the environment
+source .venv/bin/activate   # Linux/macOS
+.venv\Scripts\activate      # Windows
+
+pip install -r requirements.txt
+```
+
+### 2. Build the Development Container
 
 ```bash
 make docker-build
@@ -42,7 +56,7 @@ make docker-build
 
 This builds a Docker container with the complete open source FPGA toolchain (Yosys, nextpnr-ecp5, Project Trellis, Icarus Verilog, Verilator, cocotb, Amaranth). All `make build/sim/clean/lint` commands invoke this container automatically — you do **not** need to enter the container first.
 
-### 2. Build and Run Projects
+### 3. Build and Run Projects
 
 The project is specified as a positional argument — either the full name or any unambiguous prefix (e.g. `01` for `01_blinky`).
 
@@ -96,21 +110,9 @@ This opens a bash shell with the full toolchain available. The project directory
 
 ## Development Setup
 
-### Python Environment
+### Pre-commit Hooks
 
-Python is needed on the host for pre-commit hooks (Ruff formatting/linting runs locally, Verilator linting runs via Docker). Create a virtual environment and install pre-commit:
-
-```bash
-python -m venv .venv
-
-# Activate the environment
-source .venv/bin/activate   # Linux/macOS
-.venv\Scripts\activate      # Windows
-
-pip install pre-commit
-```
-
-Then install the git hooks:
+Install the git hooks (requires the Python environment from Quick Start):
 
 ```bash
 make setup

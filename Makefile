@@ -94,9 +94,9 @@ help:
 	$(info   [<project>] is optional -- omit to run on all projects.)
 	$(info   DRIVE defaults to D:\ (Windows). Linux example: DRIVE=/media/$$USER/iCESugar-Pro)
 	$(info )
-	$(info Setup (runs in Docker):)
-	$(info   make setup               - Install pre-commit hooks)
-	$(info   make lint                - Run linters on all files)
+	$(info Setup:)
+	$(info   make setup               - Install pre-commit hooks (runs locally))
+	$(info   make lint                - Run linters on all files (runs in Docker))
 	$(info )
 	$(info Docker targets:)
 	$(info   make docker-build        - Build the FPGA toolchain container)
@@ -105,11 +105,11 @@ help:
 	@cd .
 
 # =============================================================================
-# Setup and lint targets (run inside Docker container)
+# Setup and lint targets
 # =============================================================================
 
 setup:
-	$(DOCKER_RUN) pre-commit install
+	pre-commit install
 
 lint:
 	$(DOCKER_RUN) pre-commit run --all-files
