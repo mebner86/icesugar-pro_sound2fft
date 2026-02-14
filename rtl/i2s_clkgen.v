@@ -13,7 +13,13 @@ module i2s_clkgen #(
     output wire bclk_falling   // Single-cycle pulse on BCLK falling edge
 );
 
+    // CLK_DIV - 1 is a 32-bit expression (Verilog parameter arithmetic), but
+    // we only need the low DIV_WIDTH bits for the counter comparison. The sized
+    // localparam truncates the upper zeros and keeps both sides width-matched.
     localparam DIV_WIDTH = $clog2(CLK_DIV);
+    /* verilator lint_off WIDTHTRUNC */
+    localparam [DIV_WIDTH-1:0] DIV_MAX = CLK_DIV - 1;
+    /* verilator lint_on WIDTHTRUNC */
 
     // -------------------------------------------------------------------------
     // BCLK generation: clk / (2 * CLK_DIV)
@@ -21,7 +27,7 @@ module i2s_clkgen #(
     reg [DIV_WIDTH-1:0] bclk_counter;
     reg                 bclk_reg;
 
-    wire bclk_toggle = (bclk_counter == DIV_WIDTH'(CLK_DIV - 1));
+    wire bclk_toggle = (bclk_counter == DIV_MAX);
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin

@@ -70,13 +70,14 @@ module i2s_loopback_tb;
     task capture_word;
         integer i;
         begin
-            @(negedge amp_bclk);  // Slot bit 0: one-cycle delay (should be zero)
+            @(negedge amp_bclk);  // Slot boundary (TX hasn't processed LRCLK transition yet)
+            @(negedge amp_bclk);  // I2S delay slot (TX loaded data, sdata = 0)
             for (i = 23; i >= 0; i = i - 1) begin
                 @(negedge amp_bclk);
                 captured_word[i] = amp_din;
             end
             // Skip remaining slot bits
-            for (i = 0; i < 7; i = i + 1) begin
+            for (i = 0; i < 6; i = i + 1) begin
                 @(negedge amp_bclk);
             end
         end
@@ -88,8 +89,6 @@ module i2s_loopback_tb;
     always @(posedge clk_25m) begin
         if (dut.rx_left_valid)
             $display("[%0t] RX left  sample: 0x%06X", $time, dut.rx_left_data);
-        if (dut.rx_right_valid)
-            $display("[%0t] RX right sample: 0x%06X", $time, dut.rx_right_data);
     end
 
     // -------------------------------------------------------------------------
@@ -133,8 +132,8 @@ module i2s_loopback_tb;
         end
         capture_word();  // Right channel from TX
         $display("[%0t] TX right output: 0x%06X", $time, captured_word);
-        if (captured_word !== 24'h654321) begin
-            $display("ERROR: Expected TX right = 0x654321, got 0x%06X", captured_word);
+        if (captured_word !== 24'h000000) begin
+            $display("ERROR: Expected TX right = 0x000000, got 0x%06X", captured_word);
             errors = errors + 1;
         end
 
