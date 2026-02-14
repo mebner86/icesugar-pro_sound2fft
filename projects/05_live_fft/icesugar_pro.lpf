@@ -1,0 +1,48 @@
+# iCESugar-Pro pin constraints
+# ECP5-25F in CABGA256 package
+
+# Clock - 25 MHz oscillator
+LOCATE COMP "clk_25m" SITE "P6";
+IOBUF PORT "clk_25m" IO_TYPE=LVCMOS33;
+FREQUENCY PORT "clk_25m" 25 MHZ;
+
+# User button (active low with pull-up)
+LOCATE COMP "rst_n" SITE "L14";
+IOBUF PORT "rst_n" IO_TYPE=LVCMOS33 PULLMODE=UP;
+
+# Onboard RGB LED (active low) - useful for status indication
+LOCATE COMP "led_r" SITE "B11";
+LOCATE COMP "led_g" SITE "A11";
+LOCATE COMP "led_b" SITE "A12";
+IOBUF PORT "led_r" IO_TYPE=LVCMOS33;
+IOBUF PORT "led_g" IO_TYPE=LVCMOS33;
+IOBUF PORT "led_b" IO_TYPE=LVCMOS33;
+
+# SPH0645 microphone - P4 left column
+LOCATE COMP "mic_bclk"  SITE "R7";   # P4.5
+LOCATE COMP "mic_lrclk" SITE "D5";   # P4.7
+LOCATE COMP "mic_data"  SITE "D4";   # P4.9
+LOCATE COMP "mic_sel"   SITE "E4";   # P4.11
+IOBUF PORT "mic_bclk"  IO_TYPE=LVCMOS33;
+IOBUF PORT "mic_lrclk" IO_TYPE=LVCMOS33;
+IOBUF PORT "mic_data"  IO_TYPE=LVCMOS33;
+IOBUF PORT "mic_sel"   IO_TYPE=LVCMOS33;
+
+# HDMI output connector (TMDS differential pairs)
+LOCATE COMP "gpdi_dp[0]" SITE "G1"; # Blue +
+LOCATE COMP "gpdi_dn[0]" SITE "F1"; # Blue -
+LOCATE COMP "gpdi_dp[1]" SITE "J1"; # Green +
+LOCATE COMP "gpdi_dn[1]" SITE "H2"; # Green -
+LOCATE COMP "gpdi_dp[2]" SITE "L1"; # Red +
+LOCATE COMP "gpdi_dn[2]" SITE "K2"; # Red -
+LOCATE COMP "gpdi_dp[3]" SITE "E2"; # Clock +
+LOCATE COMP "gpdi_dn[3]" SITE "D3"; # Clock -
+
+IOBUF PORT "gpdi_dp[0]" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "gpdi_dn[0]" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "gpdi_dp[1]" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "gpdi_dn[1]" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "gpdi_dp[2]" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "gpdi_dn[2]" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "gpdi_dp[3]" IO_TYPE=LVCMOS33 DRIVE=4;
+IOBUF PORT "gpdi_dn[3]" IO_TYPE=LVCMOS33 DRIVE=4;

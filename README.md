@@ -148,6 +148,7 @@ This enables automatic linting on commit:
 | `02_hdmi_test` | HDMI test pattern output (480x800@60Hz color bars) |
 | `03_i2s_loopback` | I2S mic-to-amp loopback via parallel samples (SPH0645 → MAX98357A) |
 | `04_hdmi_graph` | HDMI line graph display (portrait timing, rotated to landscape) |
+| `05_live_fft` | Live FFT spectrum analyzer (I2S mic → FFT → HDMI graph) |
 
 ## Project Structure
 
@@ -159,6 +160,7 @@ icesugar-pro_sound2fft/
 │   └── docker-compose.yml
 ├── rtl/                  # Shared RTL modules
 │   ├── ecp5_stubs.v      # ECP5 primitive stubs for simulation
+│   ├── fft256.v          # 256-point radix-2 FFT engine
 │   ├── graph_renderer.v  # Filled line graph renderer
 │   ├── i2s_clkgen.v      # I2S BCLK/LRCLK clock generator
 │   ├── i2s_rx.v          # I2S serial-to-parallel receiver
@@ -171,7 +173,8 @@ icesugar-pro_sound2fft/
 │   ├── 01_blinky/        # LED blinky example
 │   ├── 02_hdmi_test/     # HDMI test pattern generator
 │   ├── 03_i2s_loopback/  # I2S mic-to-amp loopback
-│   └── 04_hdmi_graph/    # HDMI line graph display
+│   ├── 04_hdmi_graph/    # HDMI line graph display
+│   └── 05_live_fft/      # Live FFT spectrum analyzer
 └── README.md
 ```
 

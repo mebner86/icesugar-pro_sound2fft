@@ -30,7 +30,8 @@ repos:
             .*/tmds_serializer\.v$|   # ECP5 ODDRX1F primitive
             .*/hdmi_test\.v$|          # Top module (instantiates above)
             .*/hdmi_graph\.v$|        # Top module (instantiates above)
-            .*/i2s_loopback\.v$       # Top module (instantiates shared RTL)
+            .*/i2s_loopback\.v$|      # Top module (instantiates shared RTL)
+            .*/live_fft\.v$           # Top module (instantiates shared RTL)
           )$
 
   # Python
