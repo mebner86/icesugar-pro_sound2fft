@@ -94,9 +94,7 @@ module live_fft (
     wire       mag_valid;
     wire       fft_busy;
 
-    fft256 #(
-        .MAG_SHIFT(3)
-    ) fft_inst (
+    fft256 fft_inst (
         .clk          (clk_25m),
         .rst_n        (rst_n),
         .sample_in    (fft_sample),
@@ -150,7 +148,10 @@ module live_fft (
     // ==========================================================================
     wire [7:0] red, green, blue;
 
-    graph_renderer renderer_inst (
+    graph_renderer #(
+        .NUM_BINS(128),
+        .FIRST_BIN(1)
+    ) renderer_inst (
         .clk_pixel  (clk_pixel),
         .rst_n      (rst_sync_n),
         .pixel_x    (land_x),

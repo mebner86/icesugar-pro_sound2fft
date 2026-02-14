@@ -1,6 +1,6 @@
 # 05_live_fft - Live FFT Spectrum Display
 
-Real-time audio spectrum analyzer. Reads audio from an SPH0645 I2S microphone, computes a 256-point FFT, and displays the frequency spectrum as a filled line graph on an HDMI display (800x480@60Hz).
+Real-time audio spectrum analyzer. Reads audio from an SPH0645 I2S microphone, computes a 256-point FFT, and displays the unique half of the frequency spectrum (bins 1-128) with logarithmic magnitude as a filled line graph on an HDMI display (800x480@60Hz).
 
 ## Architecture
 
@@ -17,7 +17,7 @@ clk_25m ──► PLL ──► clk_pixel (30 MHz) ──► video_timing (480x8
          truncate to 16-bit                     │                          │
               │                           TMDS encode (3ch)                │
            fft256 ──────────────────────────────┘                          │
-              │         magnitude output (256 x 9-bit)                     │
+              │         log2 magnitude (128 bins x 9-bit)                    │
               └────────────────────────────────────────────────────────────┘
                                           TMDS serialize (4ch)
                                                 │
@@ -30,14 +30,15 @@ clk_25m ──► PLL ──► clk_pixel (30 MHz) ──► video_timing (480x8
 - **Size**: 256 points (128 unique frequency bins for real input)
 - **Arithmetic**: 16-bit signed fixed-point, Q1.14 twiddle factors
 - **Normalization**: 1/2 scaling per butterfly stage (1/N total)
-- **Magnitude**: max(|Re|, |Im|) + min(|Re|, |Im|)/4 approximation
+- **Magnitude**: max(|Re|, |Im|) + min(|Re|, |Im|)/4 approximation, then log2 (4.4 fixed-point)
+- **Dynamic range**: ~96 dB (16-bit log2), mapped to 440 pixel height (~4.6 px/dB)
 - **Timing**: ~3600 cycles (~144 us at 25 MHz) per FFT frame
 
 ### Data Flow
 
 1. **Collect**: 256 audio samples stored at bit-reversed addresses (~5.2 ms at 48.8 kHz)
 2. **Compute**: 8 butterfly stages x 128 butterflies x 3 cycles = 3072 cycles
-3. **Magnitude**: 256 bins x 2 cycles = 512 cycles, scaled and capped at 440
+3. **Magnitude**: 128 unique bins x 2 cycles = 256 cycles, log2 scaled to 0-440 pixels
 
 ### Twiddle Factors
 

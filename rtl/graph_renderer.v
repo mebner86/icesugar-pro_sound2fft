@@ -7,7 +7,9 @@
 module graph_renderer #(
     parameter H_ACTIVE   = 800,
     parameter V_ACTIVE   = 480,
-    parameter DATA_BITS  = 9
+    parameter DATA_BITS  = 9,
+    parameter NUM_BINS   = 256,  // Number of frequency bins to display
+    parameter FIRST_BIN  = 0    // First bin address (0 = include DC, 1 = skip DC)
 ) (
     input  wire                  clk_pixel,
     input  wire                  rst_n,
@@ -30,7 +32,7 @@ module graph_renderer #(
     // ======================================================================
     // Layout constants
     // ======================================================================
-    // Plot area: 768 x 440 pixels (256 bins x 3 pixels each)
+    // Plot area: 768 x 440 pixels
     localparam MARGIN_LEFT   = 20;
     localparam MARGIN_RIGHT  = 12;
     localparam MARGIN_TOP    = 16;
@@ -40,6 +42,9 @@ module graph_renderer #(
     localparam PLOT_X1 = H_ACTIVE - MARGIN_RIGHT - 1;   // 787
     localparam PLOT_Y0 = MARGIN_TOP;                     // 16
     localparam PLOT_Y1 = V_ACTIVE - MARGIN_BOTTOM - 1;   // 455
+
+    localparam PLOT_WIDTH = PLOT_X1 - PLOT_X0 + 1;     // 768
+    localparam BIN_WIDTH  = PLOT_WIDTH / NUM_BINS;      // pixels per bin
 
     // ======================================================================
     // Colors
@@ -57,13 +62,12 @@ module graph_renderer #(
     // Relative position within plot area
     wire [9:0] rel_x = pixel_x - PLOT_X0[9:0];
 
-    // Bin index = rel_x / 3, using: (rel_x * 683) >> 11
-    // For rel_x 0..767: max product = 767*683 = 524261, fits in 20 bits
-    // 524261 >> 11 = 255. Correct.
+    // bin_index = rel_x / BIN_WIDTH + FIRST_BIN
+    // Division by compile-time constant is optimized into multiply-shift by synthesis
     /* verilator lint_off UNUSEDSIGNAL */
-    wire [19:0] bin_product = rel_x * 20'd683;
+    wire [9:0] bin_div   = rel_x / BIN_WIDTH[9:0];
     /* verilator lint_on UNUSEDSIGNAL */
-    wire [7:0]  bin_index   = bin_product[18:11];
+    wire [7:0] bin_index = bin_div[7:0] + FIRST_BIN[7:0];
 
     assign data_addr = bin_index;
 
@@ -117,18 +121,19 @@ module graph_renderer #(
     wire [9:0] connect_y_top = PLOT_Y1[9:0] - {1'b0, val_max};
     wire [9:0] connect_y_bot = PLOT_Y1[9:0] - {1'b0, val_min};
 
-    // Sub-pixel position within 3-pixel bin column
+    // Sub-pixel position within bin column (BIN_WIDTH pixels wide)
     /* verilator lint_off UNUSEDSIGNAL */
-    wire [9:0] rel_x_d1  = px_d1 - PLOT_X0[9:0];
-    wire [9:0] bin_start  = {1'b0, bin_index_d1, 1'b0} + {2'b0, bin_index_d1}; // bin_index * 3
+    wire [9:0] rel_x_d1   = px_d1 - PLOT_X0[9:0];
+    wire [9:0] bin_start   = ({2'b00, bin_index_d1} - FIRST_BIN[9:0]) * BIN_WIDTH[9:0];
+    wire [9:0] sub_x_full  = rel_x_d1 - bin_start;
     /* verilator lint_on UNUSEDSIGNAL */
-    wire [1:0] sub_x      = rel_x_d1[1:0] - bin_start[1:0];
+    wire [3:0] sub_x       = sub_x_full[3:0];
 
     // Line detection (2px thick at current bin's data point)
     wire on_line = (py_d1 >= graph_y) && (py_d1 <= graph_y + 10'd1);
 
-    // Vertical connector at bin boundary (first pixel of each 3-pixel column)
-    wire on_connector = (sub_x == 2'd0) && (bin_index_d1 != 8'd0)
+    // Vertical connector at bin boundary (first pixel of each bin column)
+    wire on_connector = (sub_x == 4'd0) && (bin_index_d1 != FIRST_BIN[7:0])
                      && (py_d1 >= connect_y_top) && (py_d1 <= connect_y_bot);
 
     // Fill below the line
@@ -138,7 +143,7 @@ module graph_renderer #(
     wire [9:0] rel_y_d1 = py_d1 - PLOT_Y0[9:0];
     wire on_h_grid = (rel_y_d1 == 10'd88)  || (rel_y_d1 == 10'd176)
                   || (rel_y_d1 == 10'd264) || (rel_y_d1 == 10'd352);
-    wire on_v_grid = (bin_index_d1[4:0] == 5'd0) && (sub_x == 2'd0) && (bin_index_d1 != 8'd0);
+    wire on_v_grid = (bin_index_d1[4:0] == 5'd0) && (sub_x == 4'd0) && (bin_index_d1 != 8'd0);
 
     // Axis lines (left edge and bottom edge of plot)
     wire on_axis = ((px_d1 == PLOT_X0[9:0]) && (py_d1 >= PLOT_Y0[9:0]) && (py_d1 <= PLOT_Y1[9:0]))
