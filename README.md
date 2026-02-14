@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/mebner86/icesugar-pro_sound2fft/actions/workflows/ci.yml/badge.svg)](https://github.com/mebner86/icesugar-pro_sound2fft/actions/workflows/ci.yml)
 
-FPGA FFT demo via HDMI from I2S microphone on the iCESugar-Pro (ECP5) board.
+Real-time audio spectrum analyzer on the iCESugar-Pro (ECP5) FPGA — I2S microphone to HDMI display.
 
 
 https://github.com/user-attachments/assets/a4d3b1ac-cda3-45de-9872-42211985f9db
@@ -14,16 +14,13 @@ This project demonstrates real-time FFT visualization on an HDMI display, using 
 
 ## Requirements
 
-- Docker
+- [Python 3](https://www.python.org/downloads/)
+- [Docker](https://www.docker.com/get-started/)
 - Make
 - iCESugar-Pro FPGA board ([ECP5-25F](https://github.com/wuxx/icesugar-pro))
 - I2S MEMS microphone (e.g., [SPH0645](https://www.adafruit.com/product/3421))
 - I2S amplifier (e.g., [MAX98357A](https://www.adafruit.com/product/3006))
 - HDMI display (e.g., [Waveshare 3.2inch HDMI LCD (H)](https://www.waveshare.com/3.2inch-hdmi-lcd-h.htm))
-
-### Recommended
-
-- [GTKWave](https://gtkwave.sourceforge.net/) - for viewing simulation waveforms
 
 ### Installing Make (Windows)
 
@@ -37,31 +34,15 @@ Restart your terminal after installation for the command to become available.
 
 ## Quick Start
 
-### Build the Development Container
+### 1. Build the Development Container
 
 ```bash
 make docker-build
 ```
 
-This builds a Docker container with the complete open source FPGA toolchain:
+This builds a Docker container with the complete open source FPGA toolchain (Yosys, nextpnr-ecp5, Project Trellis, Icarus Verilog, Verilator, cocotb, Amaranth). All `make build/sim/clean/lint` commands invoke this container automatically — you do **not** need to enter the container first.
 
-- **Yosys** - Synthesis
-- **nextpnr-ecp5** - Place & Route
-- **Project Trellis** - ECP5 bitstream tools
-- **Icarus Verilog** - Simulation
-- **Verilator** - Fast simulation/linting
-- **cocotb** - Python testbench framework
-- **Amaranth** - Python HDL (optional)
-
-### Enter the Container
-
-```bash
-make docker-shell
-```
-
-This opens an interactive shell with all tools available. The project directory is mounted at `/workspace`.
-
-### Building a Project
+### 2. Build and Run Projects
 
 The project is specified as a positional argument — either the full name or any unambiguous prefix (e.g. `01` for `01_blinky`).
 
@@ -78,9 +59,6 @@ make build 01
 
 # Run simulation
 make sim 01
-
-# View simulation waveforms (requires GTKWave on host)
-gtkwave projects/01_blinky/blinky_tb.gtkw
 
 # Program the FPGA
 make program 01
@@ -99,37 +77,37 @@ make clean       # All projects
 | `make sim [<project>]` | Run simulation (or all) |
 | `make clean [<project>]` | Clean build files (or all) |
 | `make program <project>` | Program FPGA |
+| `make upload <project> [DRIVE=<path>]` | Copy bitstream to USB drive (default `D:\`, Linux: `DRIVE=/media/$USER/iCESugar-Pro`) |
 | `make setup` | Install pre-commit hooks |
 | `make lint` | Run linters on all files |
 | `make docker-build` | Build the FPGA toolchain container |
 | `make docker-shell` | Open interactive shell in container |
 | `make docker-down` | Stop and remove container |
 
-## Development Setup
+### Interactive Docker Shell
 
-### Optional Host Tools
-
-For viewing simulation waveforms, install GTKWave:
+For interactive debugging or running tools directly, you can open a shell inside the container:
 
 ```bash
-sudo apt install gtkwave   # Debian/Ubuntu
-brew install gtkwave       # macOS
+make docker-shell
 ```
 
-### Pre-commit Hooks
+This opens a bash shell with the full toolchain available. The project directory is mounted at `/workspace`.
 
-First, install [pre-commit](https://pre-commit.com/):
+## Development Setup
+
+### Python Environment
+
+Python is needed on the host for pre-commit hooks (Ruff formatting/linting runs locally, Verilator linting runs via Docker). Create a virtual environment and install pre-commit:
 
 ```bash
-# Using pipx (recommended)
-pipx install pre-commit
+python -m venv .venv
 
-# Or using pip
+# Activate the environment
+source .venv/bin/activate   # Linux/macOS
+.venv\Scripts\activate      # Windows
+
 pip install pre-commit
-
-# Or using your package manager
-brew install pre-commit  # macOS
-apt install pre-commit   # Debian/Ubuntu
 ```
 
 Then install the git hooks:
@@ -141,8 +119,23 @@ make setup
 This enables automatic linting on commit:
 - Trailing whitespace and EOF fixes
 - YAML validation
-- Verilog/SystemVerilog linting (Verilator)
+- Verilog/SystemVerilog linting (Verilator, via Docker)
 - Python formatting (Ruff)
+
+### Optional Host Tools
+
+For viewing simulation waveforms, install [GTKWave](https://gtkwave.sourceforge.net/):
+
+```bash
+sudo apt install gtkwave   # Debian/Ubuntu
+brew install gtkwave       # macOS
+```
+
+Example usage:
+
+```bash
+gtkwave projects/01_blinky/blinky_tb.gtkw
+```
 
 ## Projects
 

@@ -13,6 +13,7 @@ endif
 #   make build PROJECT=03_i2s_loopback   (explicit)
 PROJECT ?=
 PROJECTS_DIR := projects
+DRIVE ?= D:\\
 
 # Discover available projects (platform-independent, uses Make builtins)
 AVAILABLE_PROJECTS := $(patsubst $(PROJECTS_DIR)/%/,%,$(wildcard $(PROJECTS_DIR)/*/))
@@ -25,10 +26,10 @@ CLEAN_TARGETS := $(addprefix clean-,$(AVAILABLE_PROJECTS))
 # --- Positional project argument ---
 # Any command-line word that isn't a known target is treated as the project,
 # but only when a project-accepting target (build/sim/program/clean) is present.
-_KNOWN_TARGETS := help build sim program clean list setup lint \
+_KNOWN_TARGETS := help build sim program upload clean list setup lint \
   docker-build docker-shell docker-down \
   $(BUILD_TARGETS) $(SIM_TARGETS) $(CLEAN_TARGETS)
-_PROJECT_TARGETS := build sim program clean
+_PROJECT_TARGETS := build sim program upload clean
 
 _EXTRA_GOALS := $(filter-out $(_KNOWN_TARGETS),$(MAKECMDGOALS))
 ifneq ($(_EXTRA_GOALS),)
@@ -72,7 +73,7 @@ endif
 DOCKER_COMPOSE := docker compose -f docker/docker-compose.yml
 DOCKER_RUN := $(DOCKER_COMPOSE) run --rm fpga-dev
 
-.PHONY: help docker-build docker-shell docker-down setup lint build sim program clean list $(BUILD_TARGETS) $(SIM_TARGETS) $(CLEAN_TARGETS)
+.PHONY: help docker-build docker-shell docker-down setup lint build sim program upload clean list $(BUILD_TARGETS) $(SIM_TARGETS) $(CLEAN_TARGETS)
 
 # =============================================================================
 # Default target
@@ -87,9 +88,11 @@ help:
 	$(info   make sim [<project>]     - Run simulation)
 	$(info   make clean [<project>]   - Clean build files)
 	$(info   make program <project>   - Program FPGA)
+	$(info   make upload <project> [DRIVE=<path>] - Copy bitstream to USB drive)
 	$(info )
 	$(info   <project> = full name or unambiguous prefix, e.g. 01_blinky or 01.)
-	$(info   [<project>] is optional — omit to run on all projects.)
+	$(info   [<project>] is optional -- omit to run on all projects.)
+	$(info   DRIVE defaults to D:\ (Windows). Linux example: DRIVE=/media/$$USER/iCESugar-Pro)
 	$(info )
 	$(info Setup (runs in Docker):)
 	$(info   make setup               - Install pre-commit hooks)
@@ -152,6 +155,10 @@ $(SIM_TARGETS): sim-%:
 program:
 	$(call check_project,program)
 	$(MAKE) -C $(PROJECTS_DIR)/$(PROJECT) program
+
+upload:
+	$(call check_project,upload)
+	cp $(PROJECTS_DIR)/$(PROJECT)/build/*.bit $(DRIVE)
 
 clean:
 ifdef PROJECT
