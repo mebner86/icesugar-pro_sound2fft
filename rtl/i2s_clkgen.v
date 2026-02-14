@@ -21,7 +21,7 @@ module i2s_clkgen #(
     reg [DIV_WIDTH-1:0] bclk_counter;
     reg                 bclk_reg;
 
-    wire bclk_toggle = (bclk_counter == CLK_DIV - 1);
+    wire bclk_toggle = (bclk_counter == DIV_WIDTH'(CLK_DIV - 1));
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin

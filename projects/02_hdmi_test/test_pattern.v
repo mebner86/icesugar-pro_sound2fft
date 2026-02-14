@@ -1,18 +1,20 @@
 // Test Pattern Generator - Vertical Color Bars
 // 8 vertical bars: white, yellow, cyan, green, magenta, red, blue, black
 
+/* verilator lint_off UNUSEDSIGNAL */
 module test_pattern (
-    input  wire [9:0] pixel_x,
-    input  wire [9:0] pixel_y,
+    input  wire [9:0] pixel_x,  // Only [8:6] used for bar selection
+    input  wire [9:0] pixel_y,  // Not used (bars are vertical)
     input  wire       active,
 
     output wire [7:0] red,
     output wire [7:0] green,
     output wire [7:0] blue
 );
+/* verilator lint_on UNUSEDSIGNAL */
 
     // 480 pixels / 8 bars = 60 pixels per bar
-    wire [2:0] bar_index = pixel_x[9:6]; // Divide by 64 (close enough to 60)
+    wire [2:0] bar_index = pixel_x[8:6]; // Divide by 64 (close enough to 60)
 
     // Color bar pattern (active high RGB)
     // Bar 0: White   (111) -> R=FF, G=FF, B=FF

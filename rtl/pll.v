@@ -13,6 +13,8 @@ module pll (
     output wire locked
 );
 
+    /* verilator lint_off PINCONNECTEMPTY */
+    /* verilator lint_off PINMISSING */
     EHXPLLL #(
         .PLLRST_ENA("DISABLED"),
         .INTFB_WAKE("DISABLED"),
@@ -59,5 +61,7 @@ module pll (
         .ENCLKOS3(1'b0),
         .LOCK(locked)
     );
+    /* verilator lint_on PINMISSING */
+    /* verilator lint_on PINCONNECTEMPTY */
 
 endmodule

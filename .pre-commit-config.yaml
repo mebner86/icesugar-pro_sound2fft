@@ -12,26 +12,27 @@ repos:
       - id: mixed-line-ending
         args: ['--fix=lf']
 
-  # Verilog/SystemVerilog linting
-  # Excludes:
-  #   - Testbenches (*_tb.v) - use timing constructs unsupported by Verilator
-  #   - Files using ECP5 primitives - per-file lint can't resolve them
+  # Verilog/SystemVerilog linting (per-file)
+  # Pre-commit passes each file to Verilator individually, so modules that
+  # instantiate other modules can't resolve their children. These are excluded
+  # here but fully covered by `make lint` in CI (which passes all sources).
+  # -Wno-MULTITOP: pre-commit may pass multiple unrelated files in one invocation.
   - repo: local
     hooks:
       - id: verilator-lint
         name: Verilator Lint
-        entry: docker compose -f docker/docker-compose.yml run --rm -T fpga-dev verilator --lint-only -Wall -Wno-fatal
+        entry: docker compose -f docker/docker-compose.yml run --rm -T fpga-dev verilator --lint-only -Wall -Wno-MULTITOP
         language: system
         files: \.(v|sv|vh|svh)$
         exclude: |
           (?x)^(
-            .*_tb\.(v|sv)$|           # Testbenches
-            .*/pll\.v$|               # ECP5 PLL primitive
-            .*/tmds_serializer\.v$|   # ECP5 ODDRX1F primitive
-            .*/hdmi_test\.v$|          # Top module (instantiates above)
-            .*/hdmi_graph\.v$|        # Top module (instantiates above)
-            .*/i2s_loopback\.v$|      # Top module (instantiates shared RTL)
-            .*/live_fft\.v$           # Top module (instantiates shared RTL)
+            .*_tb\.(v|sv)$|           # Testbenches (timing constructs)
+            .*/pll\.v$|               # Instantiates ECP5 EHXPLLL
+            .*/tmds_serializer\.v$|   # Instantiates ECP5 ODDRX1F
+            .*/hdmi_test\.v$|         # Instantiates pll, tmds_*, video_timing
+            .*/hdmi_graph\.v$|        # Instantiates pll, tmds_*, graph_renderer
+            .*/i2s_loopback\.v$|      # Instantiates i2s_clkgen, i2s_rx, i2s_tx
+            .*/live_fft\.v$           # Instantiates pll, fft256, i2s_*, tmds_*
           )$
 
   # Python

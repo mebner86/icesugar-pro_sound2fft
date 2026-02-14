@@ -6,13 +6,11 @@ module video_timing #(
     parameter H_FRONT_PORCH = 24,
     parameter H_SYNC        = 48,
     parameter H_BACK_PORCH  = 48,
-    parameter H_TOTAL       = 600,
 
     parameter V_ACTIVE      = 800,
     parameter V_FRONT_PORCH = 3,
     parameter V_SYNC        = 5,
-    parameter V_BACK_PORCH  = 25,
-    parameter V_TOTAL       = 833
+    parameter V_BACK_PORCH  = 25
 ) (
     input  wire clk_pixel,
     input  wire rst_n,
@@ -23,6 +21,10 @@ module video_timing #(
     output wire [9:0] pixel_x, // Horizontal pixel coordinate during active
     output wire [9:0] pixel_y  // Vertical pixel coordinate during active
 );
+
+    // Total line/frame lengths (derived from components)
+    localparam H_TOTAL      = H_ACTIVE + H_FRONT_PORCH + H_SYNC + H_BACK_PORCH;
+    localparam V_TOTAL      = V_ACTIVE + V_FRONT_PORCH + V_SYNC + V_BACK_PORCH;
 
     // Sync pulse positions
     localparam H_SYNC_START = H_ACTIVE + H_FRONT_PORCH;

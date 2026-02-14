@@ -31,8 +31,7 @@ module fft256 #(
     // ======================================================================
     // Constants
     // ======================================================================
-    localparam N      = 256;
-    localparam LOG2_N = 8;
+    localparam N = 256;
     localparam [8:0] MAX_MAG = 9'd440;
 
     // FSM states
@@ -179,8 +178,10 @@ module fft256 #(
 
     // Complex twiddle multiply: W * B
     // W = cos - j*sin, so W*B = (cos*Bre + sin*Bim) + j(cos*Bim - sin*Bre)
+    /* verilator lint_off UNUSEDSIGNAL */
     wire signed [31:0] tw_x_re = tw_cos_r * b_re + tw_sin_r * b_im;
     wire signed [31:0] tw_x_im = tw_cos_r * b_im - tw_sin_r * b_re;
+    /* verilator lint_on UNUSEDSIGNAL */
 
     // Scale twiddle product back from Q1.14 (arithmetic right shift by 14)
     wire signed [17:0] t_re = tw_x_re[31:14];
@@ -190,10 +191,12 @@ module fft256 #(
     wire signed [17:0] a_re_ext = {{2{a_re[15]}}, a_re};
     wire signed [17:0] a_im_ext = {{2{a_im[15]}}, a_im};
 
+    /* verilator lint_off UNUSEDSIGNAL */
     wire signed [17:0] sum_re = a_re_ext + t_re;
     wire signed [17:0] sum_im = a_im_ext + t_im;
     wire signed [17:0] dif_re = a_re_ext - t_re;
     wire signed [17:0] dif_im = a_im_ext - t_im;
+    /* verilator lint_on UNUSEDSIGNAL */
 
     // Arithmetic right shift by 1, truncate to 16 bits
     wire [15:0] p_re_new = sum_re[16:1];
@@ -211,7 +214,9 @@ module fft256 #(
     wire [15:0] abs_re = re_rdata_a[15] ? (~re_rdata_a + 16'd1) : re_rdata_a;
     wire [15:0] abs_im = im_rdata_a[15] ? (~im_rdata_a + 16'd1) : im_rdata_a;
     wire [15:0] mag_max = (abs_re > abs_im) ? abs_re : abs_im;
+    /* verilator lint_off UNUSEDSIGNAL */
     wire [15:0] mag_min = (abs_re > abs_im) ? abs_im : abs_re;
+    /* verilator lint_on UNUSEDSIGNAL */
     // Approximate magnitude: max + min/4 (within ~5% of true magnitude)
     wire [15:0] magnitude = mag_max + {2'b00, mag_min[15:2]};
     wire [15:0] scaled_mag = magnitude >> MAG_SHIFT;

@@ -11,12 +11,16 @@ module tmds_encoder (
 );
 
     // Count number of 1s in input data
+    /* verilator lint_off WIDTHEXPAND */
     wire [3:0] n_ones = data_in[0] + data_in[1] + data_in[2] + data_in[3] +
                         data_in[4] + data_in[5] + data_in[6] + data_in[7];
+    /* verilator lint_on WIDTHEXPAND */
 
     // First stage: XOR or XNOR based on number of 1s
     wire use_xnor = (n_ones > 4) || (n_ones == 4 && data_in[0] == 0);
+    /* verilator lint_off UNOPTFLAT */
     wire [8:0] q_m;
+    /* verilator lint_on UNOPTFLAT */
 
     assign q_m[0] = data_in[0];
     assign q_m[1] = use_xnor ? ~(q_m[0] ^ data_in[1]) : (q_m[0] ^ data_in[1]);
@@ -29,8 +33,10 @@ module tmds_encoder (
     assign q_m[8] = ~use_xnor;
 
     // Count 1s and 0s in q_m[7:0]
+    /* verilator lint_off WIDTHEXPAND */
     wire [3:0] n_ones_qm = q_m[0] + q_m[1] + q_m[2] + q_m[3] +
                           q_m[4] + q_m[5] + q_m[6] + q_m[7];
+    /* verilator lint_on WIDTHEXPAND */
     wire [3:0] n_zeros_qm = 4'd8 - n_ones_qm;
 
     // DC balance counter
@@ -65,6 +71,7 @@ module tmds_encoder (
                     cnt <= cnt + $signed({1'b0, n_zeros_qm}) - $signed({1'b0, n_ones_qm});
                 end
             end else begin
+                /* verilator lint_off WIDTHEXPAND */
                 if ((cnt > 0 && n_ones_qm > 4) || (cnt < 0 && n_ones_qm < 4)) begin
                     // Invert to reduce disparity
                     tmds_out[9] <= 1'b1;
@@ -80,6 +87,7 @@ module tmds_encoder (
                     cnt <= cnt - $signed({1'b0, ~q_m[8], 1'b0}) +
                            $signed({1'b0, n_ones_qm}) - $signed({1'b0, n_zeros_qm});
                 end
+                /* verilator lint_on WIDTHEXPAND */
             end
         end
     end

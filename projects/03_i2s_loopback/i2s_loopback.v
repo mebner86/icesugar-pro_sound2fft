@@ -48,9 +48,8 @@ module i2s_loopback (
     // -------------------------------------------------------------------------
     wire [23:0] rx_left_data;
     wire        rx_left_valid;
-    wire [23:0] rx_right_data;
-    wire        rx_right_valid;
 
+    /* verilator lint_off PINCONNECTEMPTY */
     i2s_rx #(
         .DATA_BITS(24)
     ) rx (
@@ -61,26 +60,21 @@ module i2s_loopback (
         .sdata        (mic_data),
         .left_data    (rx_left_data),
         .left_valid   (rx_left_valid),
-        .right_data   (rx_right_data),
-        .right_valid  (rx_right_valid)
+        .right_data   (),
+        .right_valid  ()
     );
+    /* verilator lint_on PINCONNECTEMPTY */
 
     // -------------------------------------------------------------------------
     // Sample registers: hold latest samples for the transmitter
     // -------------------------------------------------------------------------
     reg [23:0] left_sample;
-    reg [23:0] right_sample;
 
     always @(posedge clk_25m or negedge rst_n) begin
-        if (!rst_n) begin
-            left_sample  <= 24'd0;
-            right_sample <= 24'd0;
-        end else begin
-            if (rx_left_valid)
-                left_sample <= rx_left_data;
-            if (rx_right_valid)
-                right_sample <= rx_right_data;
-        end
+        if (!rst_n)
+            left_sample <= 24'd0;
+        else if (rx_left_valid)
+            left_sample <= rx_left_data;
     end
 
     // -------------------------------------------------------------------------

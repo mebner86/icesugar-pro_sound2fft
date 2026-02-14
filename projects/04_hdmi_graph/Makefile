@@ -53,7 +53,7 @@ program: $(BITSTREAM)
 
 # Lint with Verilator (include ECP5 primitive stubs for full coverage)
 lint:
-	verilator --lint-only -Wall -Wno-fatal $(ECP5_STUBS) $(VERILOG_SRC)
+	verilator --lint-only -Wall $(ECP5_STUBS) $(VERILOG_SRC)
 
 # Simulation with Icarus Verilog
 sim: $(VCD)

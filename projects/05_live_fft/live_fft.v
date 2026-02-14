@@ -62,9 +62,12 @@ module live_fft (
     // ==========================================================================
     // I2S Receiver: deserialize mic data into 24-bit parallel samples
     // ==========================================================================
+    /* verilator lint_off UNUSEDSIGNAL */
     wire [23:0] rx_left_data;
+    /* verilator lint_on UNUSEDSIGNAL */
     wire        rx_left_valid;
 
+    /* verilator lint_off PINCONNECTEMPTY */
     i2s_rx #(
         .DATA_BITS(24)
     ) rx (
@@ -78,6 +81,7 @@ module live_fft (
         .right_data   (),
         .right_valid  ()
     );
+    /* verilator lint_on PINCONNECTEMPTY */
 
     // Truncate 24-bit samples to 16-bit for FFT (keep upper bits)
     wire signed [15:0] fft_sample = $signed(rx_left_data[23:8]);

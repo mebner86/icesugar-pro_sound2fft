@@ -60,7 +60,9 @@ module graph_renderer #(
     // Bin index = rel_x / 3, using: (rel_x * 683) >> 11
     // For rel_x 0..767: max product = 767*683 = 524261, fits in 20 bits
     // 524261 >> 11 = 255. Correct.
+    /* verilator lint_off UNUSEDSIGNAL */
     wire [19:0] bin_product = rel_x * 20'd683;
+    /* verilator lint_on UNUSEDSIGNAL */
     wire [7:0]  bin_index   = bin_product[18:11];
 
     assign data_addr = bin_index;
@@ -116,8 +118,10 @@ module graph_renderer #(
     wire [9:0] connect_y_bot = PLOT_Y1[9:0] - {1'b0, val_min};
 
     // Sub-pixel position within 3-pixel bin column
+    /* verilator lint_off UNUSEDSIGNAL */
     wire [9:0] rel_x_d1  = px_d1 - PLOT_X0[9:0];
     wire [9:0] bin_start  = {1'b0, bin_index_d1, 1'b0} + {2'b0, bin_index_d1}; // bin_index * 3
+    /* verilator lint_on UNUSEDSIGNAL */
     wire [1:0] sub_x      = rel_x_d1[1:0] - bin_start[1:0];
 
     // Line detection (2px thick at current bin's data point)
