@@ -158,7 +158,11 @@ program:
 
 upload:
 	$(call check_project,upload)
+ifeq ($(OS),Windows_NT)
+	copy $(subst /,\,$(PROJECTS_DIR)\$(PROJECT)\build\*.bit) $(DRIVE)
+else
 	cp $(PROJECTS_DIR)/$(PROJECT)/build/*.bit $(DRIVE)
+endif
 
 clean:
 ifdef PROJECT
