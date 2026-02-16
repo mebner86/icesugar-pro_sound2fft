@@ -1,0 +1,65 @@
+[*]
+[*] GTKWave Analyzer v3.3.104
+[*]
+[dumpfile] "build/pdm_to_i2s_loopback_tb.vcd"
+[savefile] "pdm_to_i2s_loopback_tb.gtkw"
+[timestart] 0
+[size] 1600 900
+[pos] -1 -1
+*-16.000000 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] pdm_to_i2s_loopback_tb.
+[treeopen] pdm_to_i2s_loopback_tb.dut.
+[treeopen] pdm_to_i2s_loopback_tb.dut.cic.
+[sst_width] 250
+[signals_width] 200
+[sst_expanded] 1
+[sst_vpaned_height] 300
+@28
+pdm_to_i2s_loopback_tb.clk_25m
+pdm_to_i2s_loopback_tb.rst_n
+@200
+-MP34DT01-M PDM Mic
+@28
+pdm_to_i2s_loopback_tb.pdm_clk
+pdm_to_i2s_loopback_tb.pdm_dat
+pdm_to_i2s_loopback_tb.pdm_sel
+@200
+-PDM Synchronizer & Edge Detect
+@28
+pdm_to_i2s_loopback_tb.dut.pdm_sync1
+pdm_to_i2s_loopback_tb.dut.pdm_sync2
+pdm_to_i2s_loopback_tb.dut.bclk_rising
+@200
+-CIC Decimation Filter
+@28
+pdm_to_i2s_loopback_tb.dut.pcm_valid
+@22
+pdm_to_i2s_loopback_tb.dut.pcm_sample[15:0]
+pdm_to_i2s_loopback_tb.dut.left_sample[23:0]
+@200
+-CIC Internals
+@24
+pdm_to_i2s_loopback_tb.dut.cic.dec_count[5:0]
+@22
+pdm_to_i2s_loopback_tb.dut.cic.integ1[19:0]
+pdm_to_i2s_loopback_tb.dut.cic.integ2[19:0]
+pdm_to_i2s_loopback_tb.dut.cic.integ3[19:0]
+pdm_to_i2s_loopback_tb.dut.cic.comb1_out[19:0]
+pdm_to_i2s_loopback_tb.dut.cic.comb2_out[19:0]
+pdm_to_i2s_loopback_tb.dut.cic.comb3_out[19:0]
+@200
+-MAX98357A Amp (I2S)
+@28
+pdm_to_i2s_loopback_tb.amp_bclk
+pdm_to_i2s_loopback_tb.amp_lrclk
+pdm_to_i2s_loopback_tb.amp_din
+pdm_to_i2s_loopback_tb.amp_sd
+pdm_to_i2s_loopback_tb.amp_gain
+@200
+-LEDs
+@28
+pdm_to_i2s_loopback_tb.led_r
+pdm_to_i2s_loopback_tb.led_g
+pdm_to_i2s_loopback_tb.led_b
+[pattern_trace] 1
+[pattern_trace] 0

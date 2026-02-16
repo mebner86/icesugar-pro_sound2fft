@@ -1,0 +1,39 @@
+# iCESugar-Pro pin constraints
+# ECP5-25F in CABGA256 package
+
+# Clock - 25 MHz oscillator
+LOCATE COMP "clk_25m" SITE "P6";
+IOBUF PORT "clk_25m" IO_TYPE=LVCMOS33;
+FREQUENCY PORT "clk_25m" 25 MHZ;
+
+# User button (active low with pull-up)
+LOCATE COMP "rst_n" SITE "L14";
+IOBUF PORT "rst_n" IO_TYPE=LVCMOS33 PULLMODE=UP;
+
+# Onboard RGB LED (active low)
+LOCATE COMP "led_r" SITE "B11";
+LOCATE COMP "led_g" SITE "A11";
+LOCATE COMP "led_b" SITE "A12";
+IOBUF PORT "led_r" IO_TYPE=LVCMOS33;
+IOBUF PORT "led_g" IO_TYPE=LVCMOS33;
+IOBUF PORT "led_b" IO_TYPE=LVCMOS33;
+
+# MP34DT01-M PDM microphone - P4
+LOCATE COMP "pdm_sel"  SITE "K4";
+LOCATE COMP "pdm_clk"  SITE "H3";
+LOCATE COMP "pdm_dat"  SITE "K3";
+IOBUF PORT "pdm_sel"  IO_TYPE=LVCMOS33;
+IOBUF PORT "pdm_clk"  IO_TYPE=LVCMOS33;
+IOBUF PORT "pdm_dat"  IO_TYPE=LVCMOS33;
+
+# MAX98357A amplifier - P4 right column
+LOCATE COMP "amp_bclk"  SITE "R8";   # P4.6
+LOCATE COMP "amp_lrclk" SITE "C4";   # P4.8
+LOCATE COMP "amp_din"   SITE "C3";   # P4.10
+LOCATE COMP "amp_sd"    SITE "E3";   # P4.12
+LOCATE COMP "amp_gain"  SITE "F3";   # P4.14
+IOBUF PORT "amp_bclk"  IO_TYPE=LVCMOS33;
+IOBUF PORT "amp_lrclk" IO_TYPE=LVCMOS33;
+IOBUF PORT "amp_din"   IO_TYPE=LVCMOS33;
+IOBUF PORT "amp_sd"    IO_TYPE=LVCMOS33;
+IOBUF PORT "amp_gain"  IO_TYPE=LVCMOS33 PULLMODE=NONE;

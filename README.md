@@ -149,6 +149,7 @@ gtkwave projects/01_blinky/blinky_tb.gtkw
 | `04_hdmi_graph` | HDMI line graph display (portrait timing, rotated to landscape) |
 | `05_live_fft` | Live FFT spectrum analyzer (I2S mic → 256-point FFT → 128-bin HDMI graph) |
 | `06_live_real_fft` | Real-valued FFT optimization (512-point real FFT via 256-point complex → 256-bin display) |
+| `07_pdm_to_i2s_loopback` | PDM mic-to-I2S amp loopback (PDM → I2S conversion) |
 
 ## Project Structure
 
@@ -167,6 +168,7 @@ icesugar-pro_sound2fft/
 │   ├── i2s_clkgen.v      # I2S BCLK/LRCLK clock generator
 │   ├── i2s_rx.v          # I2S serial-to-parallel receiver
 │   ├── i2s_tx.v          # I2S parallel-to-serial transmitter
+│   ├── pdm_cic.v         # PDM CIC decimation filter (sinc³)
 │   ├── pll.v             # PLL for pixel/shift clocks
 │   ├── tmds_encoder.v    # DVI/HDMI 8b/10b TMDS encoder
 │   ├── tmds_serializer.v # 10:1 DDR TMDS serializer
@@ -177,7 +179,8 @@ icesugar-pro_sound2fft/
 │   ├── 03_i2s_loopback/  # I2S mic-to-amp loopback
 │   ├── 04_hdmi_graph/    # HDMI line graph display
 │   ├── 05_live_fft/      # Live FFT spectrum analyzer
-│   └── 06_live_real_fft/ # Real-valued FFT (256 bins)
+│   ├── 06_live_real_fft/ # Real-valued FFT (256 bins)
+│   └── 07_pdm_to_i2s_loopback/ # PDM mic-to-I2S amp loopback
 └── README.md
 ```
 
