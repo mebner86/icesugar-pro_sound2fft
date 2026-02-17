@@ -86,12 +86,15 @@ make clean       # All projects
 
 | Command | Description |
 |---------|-------------|
+| `make help` | Show usage summary (default target) |
 | `make list` | List available projects |
 | `make build [<project>]` | Build bitstream (or all) |
 | `make sim [<project>]` | Run simulation (or all) |
-| `make clean [<project>]` | Clean build files (or all) |
+| `make clean [<project>]` | Clean build files (or all; also cleans test artifacts) |
+| `make clean-tests` | Clean only test artifacts |
 | `make program <project>` | Program FPGA |
 | `make upload <project> [DRIVE=<path>]` | Copy bitstream to USB drive (default `D:\`, Linux: `DRIVE=/media/$USER/iCESugar-Pro`) |
+| `make test` | Run RTL unit tests (cocotb) |
 | `make setup` | Install pre-commit hooks |
 | `make lint` | Run linters on all files |
 | `make docker-build` | Build the FPGA toolchain container |
@@ -173,6 +176,10 @@ icesugar-pro_sound2fft/
 │   ├── tmds_encoder.v    # DVI/HDMI 8b/10b TMDS encoder
 │   ├── tmds_serializer.v # 10:1 DDR TMDS serializer
 │   └── video_timing.v    # Video sync/timing generator
+├── tests/                # RTL unit tests (cocotb)
+│   ├── test_i2s_clkgen/  # I2S clock generator tests
+│   ├── test_i2s_rx/      # I2S receiver tests
+│   └── test_i2s_tx/      # I2S transmitter tests
 ├── projects/             # FPGA projects
 │   ├── 01_blinky/        # LED blinky example
 │   ├── 02_hdmi_test/     # HDMI test pattern generator

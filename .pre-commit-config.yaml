@@ -34,7 +34,8 @@ repos:
             .*/i2s_loopback\.v$|      # Instantiates i2s_clkgen, i2s_rx, i2s_tx
             .*/live_fft\.v$|          # Instantiates pll, fft256, i2s_*, tmds_*
             .*/live_real_fft\.v$|    # Instantiates pll, fft_real512, i2s_*, tmds_*
-            .*/pdm_to_i2s_loopback\.v$  # Instantiates i2s_clkgen, i2s_tx, pdm_cic
+            .*/pdm_to_i2s_loopback\.v$| # Instantiates i2s_clkgen, i2s_tx, pdm_cic
+            tests/.*_top\.v$            # Test wrappers (instantiate rtl/ modules)
           )$
 
   # Python

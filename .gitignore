@@ -8,6 +8,8 @@ build/
 *.vcd
 *.fst
 *.vvp
+sim_build/
+results.xml
 
 # Yosys/nextpnr intermediates
 *.json

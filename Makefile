@@ -26,7 +26,7 @@ CLEAN_TARGETS := $(addprefix clean-,$(AVAILABLE_PROJECTS))
 # --- Positional project argument ---
 # Any command-line word that isn't a known target is treated as the project,
 # but only when a project-accepting target (build/sim/program/clean) is present.
-_KNOWN_TARGETS := help build sim program upload clean list setup lint \
+_KNOWN_TARGETS := help build sim program upload clean clean-tests list setup lint test \
   docker-build docker-shell docker-down \
   $(BUILD_TARGETS) $(SIM_TARGETS) $(CLEAN_TARGETS)
 _PROJECT_TARGETS := build sim program upload clean
@@ -73,7 +73,11 @@ endif
 DOCKER_COMPOSE := docker compose -f docker/docker-compose.yml
 DOCKER_RUN := $(DOCKER_COMPOSE) run --rm fpga-dev
 
-.PHONY: help docker-build docker-shell docker-down setup lint build sim program upload clean list $(BUILD_TARGETS) $(SIM_TARGETS) $(CLEAN_TARGETS)
+# Discover test directories (each subdir of tests/ with a Makefile)
+TESTS_DIR := tests
+TEST_DIRS := $(patsubst $(TESTS_DIR)/%/Makefile,%,$(wildcard $(TESTS_DIR)/*/Makefile))
+
+.PHONY: help docker-build docker-shell docker-down setup lint test build sim program upload clean clean-tests list $(BUILD_TARGETS) $(SIM_TARGETS) $(CLEAN_TARGETS) $(TEST_TARGETS)
 
 # =============================================================================
 # Default target
@@ -97,6 +101,7 @@ help:
 	$(info Setup:)
 	$(info   make setup               - Install pre-commit hooks (runs locally))
 	$(info   make lint                - Run linters on all files (runs in Docker))
+	$(info   make test               - Run RTL unit tests (cocotb, runs in Docker))
 	$(info )
 	$(info Docker targets:)
 	$(info   make docker-build        - Build the FPGA toolchain container)
@@ -113,6 +118,13 @@ setup:
 
 lint:
 	$(DOCKER_RUN) pre-commit run --all-files
+
+TEST_TARGETS := $(addprefix test-,$(TEST_DIRS))
+
+test: $(TEST_TARGETS)
+
+$(TEST_TARGETS): test-%:
+	$(DOCKER_RUN) make -C $(TESTS_DIR)/$* SIM=icarus
 
 # =============================================================================
 # Project targets
@@ -169,12 +181,15 @@ ifdef PROJECT
 	$(call check_project,clean)
 	$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$(PROJECT) clean
 else
-	$(info Cleaning all projects...)
-	@$(MAKE) --no-print-directory $(CLEAN_TARGETS)
+	$(info Cleaning all projects and tests...)
+	@$(MAKE) --no-print-directory $(CLEAN_TARGETS) clean-tests
 endif
 
 $(CLEAN_TARGETS): clean-%:
 	-@$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$* clean
+
+clean-tests:
+	$(DOCKER_RUN) sh -c "rm -rf $(TESTS_DIR)/*/sim_build $(TESTS_DIR)/*/results.xml"
 
 # =============================================================================
 # Docker targets
