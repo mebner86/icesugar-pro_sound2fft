@@ -64,7 +64,7 @@ async def capture_i2s_slot(dut):
 @cocotb.test()
 async def test_reset_output(dut):
     """sdata should be 0 after reset."""
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 40, units="ns")
     cocotb.start_soon(clock.start())
 
     await reset_dut(dut)
@@ -75,7 +75,7 @@ async def test_reset_output(dut):
 @cocotb.test()
 async def test_left_channel_data(dut):
     """TX should serialize left_data correctly in the left channel slot."""
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 40, units="ns")
     cocotb.start_soon(clock.start())
 
     await reset_dut(dut)
@@ -97,7 +97,7 @@ async def test_left_channel_data(dut):
 @cocotb.test()
 async def test_right_channel_data(dut):
     """TX should serialize right_data correctly in the right channel slot."""
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 40, units="ns")
     cocotb.start_soon(clock.start())
 
     await reset_dut(dut)
@@ -119,7 +119,7 @@ async def test_right_channel_data(dut):
 @cocotb.test()
 async def test_padding_bits_zero(dut):
     """Padding bits (after DATA_BITS) should be 0."""
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 40, units="ns")
     cocotb.start_soon(clock.start())
 
     await reset_dut(dut)
@@ -137,7 +137,7 @@ async def test_padding_bits_zero(dut):
 @cocotb.test()
 async def test_alternating_frames(dut):
     """TX should correctly serialize different data across consecutive frames."""
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 40, units="ns")
     cocotb.start_soon(clock.start())
 
     await reset_dut(dut)

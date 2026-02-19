@@ -28,7 +28,7 @@ async def reset_dut(dut):
 @cocotb.test()
 async def test_reset_state(dut):
     """All outputs should be low after reset."""
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 40, units="ns")
     cocotb.start_soon(clock.start())
 
     await reset_dut(dut)
@@ -40,27 +40,23 @@ async def test_reset_state(dut):
 @cocotb.test()
 async def test_bclk_period(dut):
     """BCLK should toggle every CLK_DIV system clocks."""
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 40, units="ns")
     cocotb.start_soon(clock.start())
 
     await reset_dut(dut)
 
-    # Wait for first BCLK rising edge
+    # Wait for first BCLK rising edge (sampled by clk)
     while dut.bclk.value == 0:
         await RisingEdge(dut.clk)
 
-    # Measure: count clocks until BCLK falls, then rises again
+    # Measure: count clk edges until BCLK falls and then rises again
     clk_count = 0
-    await RisingEdge(dut.clk)
-    clk_count += 1
     while dut.bclk.value == 1:
         await RisingEdge(dut.clk)
         clk_count += 1
     high_time = clk_count
 
     clk_count = 0
-    await RisingEdge(dut.clk)
-    clk_count += 1
     while dut.bclk.value == 0:
         await RisingEdge(dut.clk)
         clk_count += 1
@@ -77,7 +73,7 @@ async def test_bclk_period(dut):
 @cocotb.test()
 async def test_bclk_falling_pulse(dut):
     """bclk_falling should pulse for exactly one system clock on each BCLK falling edge."""
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 40, units="ns")
     cocotb.start_soon(clock.start())
 
     await reset_dut(dut)
@@ -110,25 +106,20 @@ async def test_bclk_falling_pulse(dut):
 @cocotb.test()
 async def test_lrclk_period(dut):
     """LRCLK should toggle every 32 BCLK falling edges."""
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 40, units="ns")
     cocotb.start_soon(clock.start())
 
     await reset_dut(dut)
 
     # Wait for first LRCLK transition (0→1)
-    await RisingEdge(dut.lrclk)
-    await RisingEdge(dut.clk)
+    while dut.lrclk.value == 0:
+        await RisingEdge(dut.clk)
 
     # Measure system clocks until next LRCLK transition (1→0)
     clk_count = 0
-    prev_lrclk = int(dut.lrclk.value)
-    while True:
+    while dut.lrclk.value == 1:
         await RisingEdge(dut.clk)
         clk_count += 1
-        cur_lrclk = int(dut.lrclk.value)
-        if cur_lrclk != prev_lrclk:
-            break
-        prev_lrclk = cur_lrclk
 
     assert (
         clk_count == LRCLK_HALF_PERIOD
@@ -138,14 +129,14 @@ async def test_lrclk_period(dut):
 @cocotb.test()
 async def test_lrclk_symmetry(dut):
     """LRCLK should have a 50% duty cycle (both halves = 32 BCLK periods)."""
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 40, units="ns")
     cocotb.start_soon(clock.start())
 
     await reset_dut(dut)
 
-    # Wait for LRCLK rising edge
-    await RisingEdge(dut.lrclk)
-    await RisingEdge(dut.clk)
+    # Wait for first LRCLK transition (0→1)
+    while dut.lrclk.value == 0:
+        await RisingEdge(dut.clk)
 
     # Measure high half
     high_count = 0

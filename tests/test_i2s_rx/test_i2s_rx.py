@@ -37,7 +37,7 @@ async def wait_for_valid(dut, signal, timeout_clocks=FRAME_CLOCKS * 3):
 @cocotb.test()
 async def test_reset_state(dut):
     """RX outputs should be 0 and valid signals low after reset."""
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 40, units="ns")
     cocotb.start_soon(clock.start())
 
     await reset_dut(dut)
@@ -51,7 +51,7 @@ async def test_reset_state(dut):
 @cocotb.test()
 async def test_loopback_left(dut):
     """RX should recover the left channel sample that TX serialized."""
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 40, units="ns")
     cocotb.start_soon(clock.start())
 
     await reset_dut(dut)
@@ -75,7 +75,7 @@ async def test_loopback_left(dut):
 @cocotb.test()
 async def test_loopback_right(dut):
     """RX should recover the right channel sample that TX serialized."""
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 40, units="ns")
     cocotb.start_soon(clock.start())
 
     await reset_dut(dut)
@@ -96,7 +96,7 @@ async def test_loopback_right(dut):
 @cocotb.test()
 async def test_loopback_both_channels(dut):
     """RX should recover both channels simultaneously."""
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 40, units="ns")
     cocotb.start_soon(clock.start())
 
     await reset_dut(dut)
@@ -139,7 +139,7 @@ async def test_loopback_both_channels(dut):
 @cocotb.test()
 async def test_valid_pulses_single_cycle(dut):
     """left_valid and right_valid should each be high for exactly one clock cycle."""
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 40, units="ns")
     cocotb.start_soon(clock.start())
 
     await reset_dut(dut)
@@ -160,7 +160,7 @@ async def test_valid_pulses_single_cycle(dut):
 @cocotb.test()
 async def test_changing_data(dut):
     """RX should track changing TX data across frames."""
-    clock = Clock(dut.clk, 10, units="ns")
+    clock = Clock(dut.clk, 40, units="ns")
     cocotb.start_soon(clock.start())
 
     await reset_dut(dut)
