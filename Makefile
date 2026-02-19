@@ -77,7 +77,7 @@ DOCKER_RUN := $(DOCKER_COMPOSE) run --rm fpga-dev
 TESTS_DIR := tests
 TEST_DIRS := $(patsubst $(TESTS_DIR)/%/Makefile,%,$(wildcard $(TESTS_DIR)/*/Makefile))
 
-.PHONY: help docker-build docker-shell docker-down setup lint test build sim program upload clean clean-tests list $(BUILD_TARGETS) $(SIM_TARGETS) $(CLEAN_TARGETS) $(TEST_TARGETS)
+.PHONY: help check-docker docker-build docker-shell docker-down setup lint test build sim program upload clean clean-tests list $(BUILD_TARGETS) $(SIM_TARGETS) $(CLEAN_TARGETS) $(TEST_TARGETS)
 
 # =============================================================================
 # Default target
@@ -113,17 +113,24 @@ help:
 # Setup and lint targets
 # =============================================================================
 
+check-docker:
+ifeq ($(OS),Windows_NT)
+	@docker info >nul 2>&1 || (echo ERROR: Docker is not running. Please start Docker Desktop and try again. & exit /b 1)
+else
+	@docker info > /dev/null 2>&1 || (echo "ERROR: Docker is not running. Please start Docker Desktop and try again." && exit 1)
+endif
+
 setup:
 	pre-commit install
 
-lint:
+lint: check-docker
 	$(DOCKER_RUN) pre-commit run --all-files
 
 TEST_TARGETS := $(addprefix test-,$(TEST_DIRS))
 
-test: $(TEST_TARGETS)
+test: check-docker $(TEST_TARGETS)
 
-$(TEST_TARGETS): test-%:
+$(TEST_TARGETS): test-%: check-docker
 	$(DOCKER_RUN) make -C $(TESTS_DIR)/$* SIM=icarus
 
 # =============================================================================
@@ -140,7 +147,7 @@ list:
 	$(foreach p,$(AVAILABLE_PROJECTS),$(info   - $(p)))
 	@cd .
 
-build:
+build: check-docker
 ifdef PROJECT
 	$(call check_project,build)
 	$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$(PROJECT) all
@@ -152,7 +159,7 @@ endif
 $(BUILD_TARGETS): build-%:
 	-@$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$* all
 
-sim:
+sim: check-docker
 ifdef PROJECT
 	$(call check_project,sim)
 	$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$(PROJECT) sim
@@ -176,7 +183,7 @@ else
 	cp $(PROJECTS_DIR)/$(PROJECT)/build/*.bit $(DRIVE)
 endif
 
-clean:
+clean: check-docker
 ifdef PROJECT
 	$(call check_project,clean)
 	$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$(PROJECT) clean
@@ -188,18 +195,18 @@ endif
 $(CLEAN_TARGETS): clean-%:
 	-@$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$* clean
 
-clean-tests:
+clean-tests: check-docker
 	$(DOCKER_RUN) sh -c "rm -rf $(TESTS_DIR)/*/sim_build $(TESTS_DIR)/*/results.xml"
 
 # =============================================================================
 # Docker targets
 # =============================================================================
 
-docker-build:
+docker-build: check-docker
 	$(DOCKER_COMPOSE) build
 
-docker-shell:
+docker-shell: check-docker
 	$(DOCKER_RUN) bash
 
-docker-down:
+docker-down: check-docker
 	$(DOCKER_COMPOSE) down
