@@ -191,6 +191,29 @@ icesugar-pro_sound2fft/
 └── README.md
 ```
 
+## Shared RTL Modules
+
+Reusable modules live in `rtl/` and are shared across projects.
+
+### I2S clock domain design
+
+The three I2S modules (`i2s_clkgen`, `i2s_tx`, `i2s_rx`) all run in the **system clock domain**. Rather than treating `bclk` as a second clock, `i2s_clkgen` produces a `bclk_falling` strobe: a single-cycle pulse on every BCLK falling edge, expressed as a combinational signal in the system clock domain:
+
+```verilog
+wire bclk_toggle  = (bclk_counter == DIV_MAX);   // fires once per BCLK half-period
+assign bclk_falling = bclk_toggle && bclk_reg;   // only when BCLK is currently high
+```
+
+`i2s_tx` and `i2s_rx` advance their state machines only when `bclk_falling` is asserted:
+
+```verilog
+if (bclk_falling) begin
+    // shift one bit
+end
+```
+
+This keeps all three modules in a single clock domain, which simplifies synthesis timing constraints and avoids the need for CDC (clock domain crossing) logic.
+
 ## License
 
 See [LICENSE](LICENSE) file.
