@@ -37,13 +37,20 @@ RUN curl -L https://github.com/YosysHQ/oss-cad-suite-build/releases/download/${O
 # Add OSS CAD Suite to PATH
 ENV PATH="/opt/oss-cad-suite/bin:${PATH}"
 
-# Install Python tools for FPGA development and linting
+# Install Python tools for FPGA development and linting into the system Python
+# (used by Makefile scripts such as gen_twiddle.py)
 RUN pip3 install --break-system-packages \
     amaranth \
     cocotb \
     cocotb-bus \
+    numpy \
     pre-commit \
     ruff
+
+# cocotb's simulation runner uses the OSS CAD Suite's own Python interpreter
+# (tabbypy3), which is a separate environment from the system Python above.
+# Install numpy there too so test files can import it.
+RUN tabbypy3 -m pip install numpy
 
 # Create workspace directory
 WORKDIR /workspace
