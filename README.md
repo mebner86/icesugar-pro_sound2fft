@@ -14,49 +14,24 @@ This project demonstrates real-time FFT visualization on an HDMI display, using 
 
 ## Requirements
 
-- [Python 3](https://www.python.org/downloads/)
 - [Docker](https://www.docker.com/get-started/)
-- Make
+- [VS Code](https://code.visualstudio.com/) with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 - iCESugar-Pro FPGA board ([ECP5-25F](https://github.com/wuxx/icesugar-pro))
 - I2S MEMS microphone (e.g., [SPH0645](https://www.adafruit.com/product/3421))
 - I2S amplifier (e.g., [MAX98357A](https://www.adafruit.com/product/3006))
 - HDMI display (e.g., [Waveshare 3.2inch HDMI LCD (H)](https://www.waveshare.com/3.2inch-hdmi-lcd-h.htm))
 
-### Installing Make (Windows)
-
-If you don't have `make` installed, you can install it with:
-
-```bash
-winget install ezwinports.make
-```
-
-Restart your terminal after installation for the command to become available.
-
 ## Quick Start
 
-### 1. Set Up Python Environment
+### 1. Open in Dev Container
 
-Python is used for twiddle-factor generation, test data scripts, and pre-commit hooks. Create a virtual environment and install dependencies:
+Open the repository folder in VS Code, then either:
+- Click **Reopen in Container** in the notification that appears, or
+- Open the Command Palette (`Ctrl+Shift+P`) and run **Dev Containers: Reopen in Container**
 
-```bash
-python -m venv .venv
+VS Code builds the container (first time only) and reopens the workspace inside it. All FPGA tools (Yosys, nextpnr-ecp5, Project Trellis, Icarus Verilog, Verilator, cocotb) are available directly in the integrated terminal. Pre-commit hooks are installed automatically.
 
-# Activate the environment
-source .venv/bin/activate   # Linux/macOS
-.venv\Scripts\activate      # Windows
-
-pip install -r requirements.txt
-```
-
-### 2. Build the Development Container
-
-```bash
-make docker-build
-```
-
-This builds a Docker container with the complete open source FPGA toolchain (Yosys, nextpnr-ecp5, Project Trellis, Icarus Verilog, Verilator, cocotb, Amaranth). All `make build/sim/clean/lint` commands invoke this container automatically — you do **not** need to enter the container first.
-
-### 3. Build and Run Projects
+### 2. Build and Run Projects
 
 The project is specified as a positional argument — either the full name or any unambiguous prefix (e.g. `01` for `01_blinky`).
 
@@ -74,9 +49,6 @@ make build 01
 # Run simulation
 make sim 01
 
-# Program the FPGA
-make program 01
-
 # Clean build artifacts
 make clean 01    # Single project
 make clean       # All projects
@@ -92,40 +64,25 @@ make clean       # All projects
 | `make sim [<project>]` | Run simulation (or all) |
 | `make clean [<project>]` | Clean build files (or all; also cleans test artifacts) |
 | `make clean-tests` | Clean only test artifacts |
-| `make program <project>` | Program FPGA |
-| `make upload <project> [DRIVE=<path>]` | Copy bitstream to USB drive (default `D:\`, Linux: `DRIVE=/media/$USER/iCESugar-Pro`) |
 | `make test` | Run RTL unit tests (cocotb) |
 | `make setup` | Install pre-commit hooks |
 | `make lint` | Run linters on all files |
-| `make docker-build` | Build the FPGA toolchain container |
-| `make docker-shell` | Open interactive shell in container |
-| `make docker-down` | Stop and remove container |
 
-### Interactive Docker Shell
+### Programming the FPGA
 
-For interactive debugging or running tools directly, you can open a shell inside the container:
-
-```bash
-make docker-shell
-```
-
-This opens a bash shell with the full toolchain available. The project directory is mounted at `/workspace`.
+Flashing the bitstream to the board requires USB access, which is not available inside the dev container. Copy the built bitstream from `projects/<project>/build/<project>.bit` to your host machine and flash it using [icesprog](https://github.com/wuxx/icesugar) or by copying to the USB drive that appears when the board is plugged in.
 
 ## Development Setup
 
 ### Pre-commit Hooks
 
-Install the git hooks (requires the Python environment from Quick Start):
-
-```bash
-make setup
-```
-
-This enables automatic linting on commit:
+Pre-commit hooks are installed automatically when the dev container starts. On each commit they run:
 - Trailing whitespace and EOF fixes
 - YAML validation
-- Verilog/SystemVerilog linting (Verilator, via Docker)
+- Verilog/SystemVerilog linting (Verilator)
 - Python formatting (Ruff)
+
+To reinstall manually: `make setup`
 
 ### Optional Host Tools
 
@@ -159,6 +116,8 @@ gtkwave projects/01_blinky/blinky_tb.gtkw
 ```
 icesugar-pro_sound2fft/
 ├── Makefile              # Top-level build orchestration
+├── .devcontainer/
+│   └── devcontainer.json # VS Code Dev Container configuration
 ├── docker/
 │   ├── Dockerfile        # FPGA toolchain container
 │   └── docker-compose.yml

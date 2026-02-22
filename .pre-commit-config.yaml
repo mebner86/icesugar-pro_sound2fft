@@ -21,7 +21,7 @@ repos:
     hooks:
       - id: verilator-lint
         name: Verilator Lint
-        entry: docker compose -f docker/docker-compose.yml run --rm -T fpga-dev verilator --lint-only -Wall -Wno-MULTITOP
+        entry: verilator --lint-only -Wall -Wno-MULTITOP
         language: system
         files: \.(v|sv|vh|svh)$
         exclude: |

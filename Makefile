@@ -1,21 +1,14 @@
 # iCESugar-Pro Sound2FFT Project
 # Top-level Makefile
-
-# On Windows, force cmd.exe so ifeq branches match the active shell.
-# On Linux/macOS, Make defaults to /bin/sh which is correct.
-ifeq ($(OS),Windows_NT)
-SHELL := cmd.exe
-.SHELLFLAGS := /c
-endif
+# Runs inside the VS Code Dev Container (all tools available on PATH).
 
 # Project selection — supports positional arg or explicit variable:
 #   make build 03       (positional, prefix-matched)
 #   make build PROJECT=03_i2s_loopback   (explicit)
 PROJECT ?=
 PROJECTS_DIR := projects
-DRIVE ?= D:\\
 
-# Discover available projects (platform-independent, uses Make builtins)
+# Discover available projects (uses Make builtins)
 AVAILABLE_PROJECTS := $(patsubst $(PROJECTS_DIR)/%/,%,$(wildcard $(PROJECTS_DIR)/*/))
 
 # Sub-targets for building/simulating/cleaning individual projects
@@ -25,11 +18,10 @@ CLEAN_TARGETS := $(addprefix clean-,$(AVAILABLE_PROJECTS))
 
 # --- Positional project argument ---
 # Any command-line word that isn't a known target is treated as the project,
-# but only when a project-accepting target (build/sim/program/clean) is present.
-_KNOWN_TARGETS := help build sim program upload clean clean-tests list setup lint test \
-  docker-build docker-shell docker-down \
+# but only when a project-accepting target (build/sim/clean) is present.
+_KNOWN_TARGETS := help build sim clean clean-tests list setup lint test \
   $(BUILD_TARGETS) $(SIM_TARGETS) $(CLEAN_TARGETS)
-_PROJECT_TARGETS := build sim program upload clean
+_PROJECT_TARGETS := build sim clean
 
 _EXTRA_GOALS := $(filter-out $(_KNOWN_TARGETS),$(MAKECMDGOALS))
 ifneq ($(_EXTRA_GOALS),)
@@ -66,18 +58,16 @@ endif
 ifneq ($(_EXTRA_GOALS),)
 .PHONY: $(_EXTRA_GOALS)
 $(_EXTRA_GOALS):
-	@cd .
+	@:
 endif
-
-# Docker commands
-DOCKER_COMPOSE := docker compose -f docker/docker-compose.yml
-DOCKER_RUN := $(DOCKER_COMPOSE) run --rm fpga-dev
 
 # Discover test directories (each subdir of tests/ with a Makefile)
 TESTS_DIR := tests
 TEST_DIRS := $(patsubst $(TESTS_DIR)/%/Makefile,%,$(wildcard $(TESTS_DIR)/*/Makefile))
+TEST_TARGETS := $(addprefix test-,$(TEST_DIRS))
 
-.PHONY: help check-docker docker-build docker-shell docker-down setup lint test build sim program upload clean clean-tests list $(BUILD_TARGETS) $(SIM_TARGETS) $(CLEAN_TARGETS) $(TEST_TARGETS)
+.PHONY: help setup lint test build sim clean clean-tests list \
+  $(BUILD_TARGETS) $(SIM_TARGETS) $(CLEAN_TARGETS) $(TEST_TARGETS)
 
 # =============================================================================
 # Default target
@@ -91,53 +81,35 @@ help:
 	$(info   make build [<project>]   - Build bitstream)
 	$(info   make sim [<project>]     - Run simulation)
 	$(info   make clean [<project>]   - Clean build files)
-	$(info   make program <project>   - Program FPGA)
-	$(info   make upload <project> [DRIVE=<path>] - Copy bitstream to USB drive)
 	$(info )
 	$(info   <project> = full name or unambiguous prefix, e.g. 01_blinky or 01.)
 	$(info   [<project>] is optional -- omit to run on all projects.)
-	$(info   DRIVE defaults to D:\ (Windows). Linux example: DRIVE=/media/$$USER/iCESugar-Pro)
 	$(info )
-	$(info Setup:)
-	$(info   make setup               - Install pre-commit hooks (runs locally))
-	$(info   make lint                - Run linters on all files (runs in Docker))
-	$(info   make test               - Run RTL unit tests (cocotb, runs in Docker))
-	$(info )
-	$(info Docker targets:)
-	$(info   make docker-build        - Build the FPGA toolchain container)
-	$(info   make docker-shell        - Open interactive shell in container)
-	$(info   make docker-down         - Stop and remove container)
-	@cd .
+	$(info Development targets:)
+	$(info   make setup               - Install pre-commit hooks)
+	$(info   make lint                - Run linters on all files)
+	$(info   make test                - Run RTL unit tests (cocotb))
+	@:
 
 # =============================================================================
 # Setup and lint targets
 # =============================================================================
 
-check-docker:
-ifeq ($(OS),Windows_NT)
-	@docker info >nul 2>&1 || (echo ERROR: Docker is not running. Please start Docker Desktop and try again. & exit /b 1)
-else
-	@docker info > /dev/null 2>&1 || (echo "ERROR: Docker is not running. Please start Docker Desktop and try again." && exit 1)
-endif
-
 setup:
 	pre-commit install
 
-lint: check-docker
-	$(DOCKER_RUN) pre-commit run --all-files
+lint:
+	pre-commit run --all-files
 
-TEST_TARGETS := $(addprefix test-,$(TEST_DIRS))
+test: $(TEST_TARGETS)
 
-test: check-docker $(TEST_TARGETS)
-
-$(TEST_TARGETS): test-%: check-docker
-	$(DOCKER_RUN) make -C $(TESTS_DIR)/$* SIM=icarus
+$(TEST_TARGETS): test-%:
+	$(MAKE) -C $(TESTS_DIR)/$* SIM=icarus
 
 # =============================================================================
 # Project targets
 # =============================================================================
 
-# Validate PROJECT is set (abbreviation resolution above already ensures it exists)
 define check_project
 $(if $(PROJECT),,$(error No project specified. Usage: make $(1) <project>. Available: $(AVAILABLE_PROJECTS)))
 endef
@@ -145,68 +117,43 @@ endef
 list:
 	$(info Available projects:)
 	$(foreach p,$(AVAILABLE_PROJECTS),$(info   - $(p)))
-	@cd .
+	@:
 
-build: check-docker
+build:
 ifdef PROJECT
 	$(call check_project,build)
-	$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$(PROJECT) all
+	$(MAKE) -C $(PROJECTS_DIR)/$(PROJECT) all
 else
 	$(info Building all projects...)
 	@$(MAKE) --no-print-directory $(BUILD_TARGETS)
 endif
 
 $(BUILD_TARGETS): build-%:
-	-@$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$* all
+	-@$(MAKE) -C $(PROJECTS_DIR)/$* all
 
-sim: check-docker
+sim:
 ifdef PROJECT
 	$(call check_project,sim)
-	$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$(PROJECT) sim
+	$(MAKE) -C $(PROJECTS_DIR)/$(PROJECT) sim
 else
 	$(info Simulating all projects...)
 	@$(MAKE) --no-print-directory $(SIM_TARGETS)
 endif
 
 $(SIM_TARGETS): sim-%:
-	-@$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$* sim
+	-@$(MAKE) -C $(PROJECTS_DIR)/$* sim
 
-program:
-	$(call check_project,program)
-	$(MAKE) -C $(PROJECTS_DIR)/$(PROJECT) program
-
-upload:
-	$(call check_project,upload)
-ifeq ($(OS),Windows_NT)
-	copy $(subst /,\,$(PROJECTS_DIR)\$(PROJECT)\build\*.bit) $(DRIVE)
-else
-	cp $(PROJECTS_DIR)/$(PROJECT)/build/*.bit $(DRIVE)
-endif
-
-clean: check-docker
+clean:
 ifdef PROJECT
 	$(call check_project,clean)
-	$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$(PROJECT) clean
+	$(MAKE) -C $(PROJECTS_DIR)/$(PROJECT) clean
 else
 	$(info Cleaning all projects and tests...)
 	@$(MAKE) --no-print-directory $(CLEAN_TARGETS) clean-tests
 endif
 
 $(CLEAN_TARGETS): clean-%:
-	-@$(DOCKER_RUN) make -C $(PROJECTS_DIR)/$* clean
+	-@$(MAKE) -C $(PROJECTS_DIR)/$* clean
 
-clean-tests: check-docker
-	$(DOCKER_RUN) sh -c "rm -rf $(TESTS_DIR)/*/sim_build $(TESTS_DIR)/*/results.xml"
-
-# =============================================================================
-# Docker targets
-# =============================================================================
-
-docker-build: check-docker
-	$(DOCKER_COMPOSE) build
-
-docker-shell: check-docker
-	$(DOCKER_RUN) bash
-
-docker-down: check-docker
-	$(DOCKER_COMPOSE) down
+clean-tests:
+	rm -rf $(TESTS_DIR)/*/sim_build $(TESTS_DIR)/*/results.xml

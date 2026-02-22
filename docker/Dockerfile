@@ -48,23 +48,13 @@ RUN pip3 install --break-system-packages \
 # Create workspace directory
 WORKDIR /workspace
 
-# Create non-root user for development
-RUN useradd -m -s /bin/bash fpga && \
-    chown -R fpga:fpga /workspace
-
 # Add udev rules for FTDI devices (used when running with --privileged)
 RUN mkdir -p /etc/udev/rules.d && \
     echo 'ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="602b", MODE="0666", GROUP="plugdev"' > /etc/udev/rules.d/99-icesugar.rules
 
-# Default to fpga user
-USER fpga
-
-# Mark /workspace as safe for git (needed for bind-mounted volumes with different ownership)
-RUN git config --global --add safe.directory /workspace
-
 # Pre-install pre-commit hook environments so they're cached in the image
-COPY --chown=fpga:fpga .pre-commit-config.yaml /tmp/.pre-commit-config.yaml
-RUN cd /tmp && git init && git config --global --add safe.directory /tmp && pre-commit install-hooks && rm -rf /tmp/.git
+COPY .pre-commit-config.yaml /tmp/.pre-commit-config.yaml
+RUN cd /tmp && git init && pre-commit install-hooks && rm -rf /tmp/.git
 
 # Verify installations
 RUN yosys --version && \
