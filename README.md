@@ -136,9 +136,11 @@ icesugar-pro_sound2fft/
 │   ├── tmds_serializer.v # 10:1 DDR TMDS serializer
 │   └── video_timing.v    # Video sync/timing generator
 ├── tests/                # RTL unit tests (cocotb)
+│   ├── test_fft256/      # 256-point FFT engine tests
 │   ├── test_i2s_clkgen/  # I2S clock generator tests
 │   ├── test_i2s_rx/      # I2S receiver tests
-│   └── test_i2s_tx/      # I2S transmitter tests
+│   ├── test_i2s_tx/      # I2S transmitter tests
+│   └── test_pdm_cic/     # PDM CIC decimation filter tests
 ├── projects/             # FPGA projects
 │   ├── 01_blinky/        # LED blinky example
 │   ├── 02_hdmi_test/     # HDMI test pattern generator

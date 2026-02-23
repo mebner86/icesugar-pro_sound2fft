@@ -13,6 +13,7 @@ thin Verilog wrapper that wires multiple modules together.
 | [`test_i2s_tx/`](test_i2s_tx/README.md) | `i2s_clkgen` + `i2s_tx` | TX serializer via `i2s_tx_top` wrapper |
 | [`test_i2s_rx/`](test_i2s_rx/README.md) | `i2s_clkgen` + `i2s_tx` + `i2s_rx` | RX deserializer via loopback wrapper |
 | [`test_fft256/`](test_fft256/README.md) | `fft256` | 256-point FFT engine — collection, compute, magnitude output |
+| [`test_pdm_cic/`](test_pdm_cic/README.md) | `pdm_cic` | PDM→PCM CIC decimation filter — timing, polarity, bit-exact reference comparison |
 
 ## Running the tests
 
