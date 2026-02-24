@@ -105,6 +105,7 @@ gtkwave projects/01_blinky/blinky_tb.gtkw
 |---------|-------------|
 | `01_blinky` | LED blink test - basic I/O verification |
 | `02_hdmi_test` | HDMI test pattern output (480x800@60Hz color bars) |
+| `03_i2s_direct_loopback` | I2S mic-to-amp loopback via direct bit-stream pass-through (no SerDes) |
 | `04_i2s_serdes_loopback` | I2S mic-to-amp loopback via parallel samples (SPH0645 → MAX98357A) |
 | `05_hdmi_graph` | HDMI line graph display (portrait timing, rotated to landscape) |
 | `06_live_fft` | Live FFT spectrum analyzer (I2S mic → 256-point FFT → 128-bin HDMI graph) |
@@ -145,6 +146,7 @@ icesugar-pro_sound2fft/
 ├── projects/             # FPGA projects
 │   ├── 01_blinky/        # LED blinky example
 │   ├── 02_hdmi_test/     # HDMI test pattern generator
+│   ├── 03_i2s_direct_loopback/ # I2S direct bit-stream loopback
 │   ├── 04_i2s_serdes_loopback/ # I2S mic-to-amp loopback
 │   ├── 05_hdmi_graph/    # HDMI line graph display
 │   ├── 06_live_fft/      # Live FFT spectrum analyzer
