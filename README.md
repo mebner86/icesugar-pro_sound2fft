@@ -110,6 +110,7 @@ gtkwave projects/01_blinky/blinky_tb.gtkw
 | `05_live_fft` | Live FFT spectrum analyzer (I2S mic → 256-point FFT → 128-bin HDMI graph) |
 | `06_live_real_fft` | Real-valued FFT optimization (512-point real FFT via 256-point complex → 256-bin display) |
 | `07_pdm_to_i2s_loopback` | PDM mic-to-I2S amp loopback (PDM → I2S conversion) |
+| `08_pdm_bitstream_loopback` | Raw PDM bitstream loopback (PDM mic → PDM amp, no DSP) |
 
 ## Project Structure
 
@@ -148,7 +149,8 @@ icesugar-pro_sound2fft/
 │   ├── 04_hdmi_graph/    # HDMI line graph display
 │   ├── 05_live_fft/      # Live FFT spectrum analyzer
 │   ├── 06_live_real_fft/ # Real-valued FFT (256 bins)
-│   └── 07_pdm_to_i2s_loopback/ # PDM mic-to-I2S amp loopback
+│   ├── 07_pdm_to_i2s_loopback/ # PDM mic-to-I2S amp loopback
+│   └── 08_pdm_bitstream_loopback/ # Raw PDM bitstream loopback
 └── README.md
 ```
 
