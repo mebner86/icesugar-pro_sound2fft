@@ -105,12 +105,12 @@ gtkwave projects/01_blinky/blinky_tb.gtkw
 |---------|-------------|
 | `01_blinky` | LED blink test - basic I/O verification |
 | `02_hdmi_test` | HDMI test pattern output (480x800@60Hz color bars) |
-| `03_i2s_loopback` | I2S mic-to-amp loopback via parallel samples (SPH0645 → MAX98357A) |
-| `04_hdmi_graph` | HDMI line graph display (portrait timing, rotated to landscape) |
-| `05_live_fft` | Live FFT spectrum analyzer (I2S mic → 256-point FFT → 128-bin HDMI graph) |
-| `06_live_real_fft` | Real-valued FFT optimization (512-point real FFT via 256-point complex → 256-bin display) |
-| `07_pdm_to_i2s_loopback` | PDM mic-to-I2S amp loopback (PDM → I2S conversion) |
+| `04_i2s_serdes_loopback` | I2S mic-to-amp loopback via parallel samples (SPH0645 → MAX98357A) |
+| `05_hdmi_graph` | HDMI line graph display (portrait timing, rotated to landscape) |
+| `06_live_fft` | Live FFT spectrum analyzer (I2S mic → 256-point FFT → 128-bin HDMI graph) |
+| `07_live_real_fft` | Real-valued FFT optimization (512-point real FFT via 256-point complex → 256-bin display) |
 | `08_pdm_bitstream_loopback` | Raw PDM bitstream loopback (PDM mic → PDM amp, no DSP) |
+| `10_pdm_to_i2s_loopback` | PDM mic-to-I2S amp loopback (PDM → I2S conversion via CIC filter) |
 
 ## Project Structure
 
@@ -145,12 +145,12 @@ icesugar-pro_sound2fft/
 ├── projects/             # FPGA projects
 │   ├── 01_blinky/        # LED blinky example
 │   ├── 02_hdmi_test/     # HDMI test pattern generator
-│   ├── 03_i2s_loopback/  # I2S mic-to-amp loopback
-│   ├── 04_hdmi_graph/    # HDMI line graph display
-│   ├── 05_live_fft/      # Live FFT spectrum analyzer
-│   ├── 06_live_real_fft/ # Real-valued FFT (256 bins)
-│   ├── 07_pdm_to_i2s_loopback/ # PDM mic-to-I2S amp loopback
-│   └── 08_pdm_bitstream_loopback/ # Raw PDM bitstream loopback
+│   ├── 04_i2s_serdes_loopback/ # I2S mic-to-amp loopback
+│   ├── 05_hdmi_graph/    # HDMI line graph display
+│   ├── 06_live_fft/      # Live FFT spectrum analyzer
+│   ├── 07_live_real_fft/ # Real-valued FFT (256 bins)
+│   ├── 08_pdm_bitstream_loopback/ # Raw PDM bitstream loopback
+│   └── 10_pdm_to_i2s_loopback/ # PDM mic-to-I2S amp loopback
 └── README.md
 ```
 

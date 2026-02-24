@@ -1,4 +1,4 @@
-# 04_hdmi_graph - HDMI Graph Display
+# 05_hdmi_graph - HDMI Graph Display
 
 HDMI line graph display in landscape orientation (800x480@60Hz). Shows a static FFT-like test spectrum as a filled line graph. Designed for later connection to live FFT data.
 
@@ -61,7 +61,7 @@ python gen_test_data.py
 
 ```bash
 # From repo root (runs in Docker)
-make build PROJECT=04_hdmi_graph
-make sim PROJECT=04_hdmi_graph
-make program PROJECT=04_hdmi_graph
+make build PROJECT=05_hdmi_graph
+make sim PROJECT=05_hdmi_graph
+make program PROJECT=05_hdmi_graph
 ```

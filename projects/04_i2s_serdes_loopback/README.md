@@ -1,4 +1,4 @@
-# 03_i2s_loopback
+# 04_i2s_serdes_loopback
 
 I2S audio loopback for the iCESugar-Pro board.
 
@@ -34,14 +34,14 @@ Reads audio from an SPH0645 MEMS microphone over I2S and forwards it directly to
 From the project root, use the top-level Makefile (runs in Docker automatically):
 
 ```bash
-make build PROJECT=03_i2s_loopback   # Build bitstream
-make sim PROJECT=03_i2s_loopback     # Run simulation
+make build PROJECT=04_i2s_serdes_loopback   # Build bitstream
+make sim PROJECT=04_i2s_serdes_loopback     # Run simulation
 ```
 
 Or inside the Docker container (`make docker-shell`), run directly:
 
 ```bash
-cd projects/03_i2s_loopback
+cd projects/04_i2s_serdes_loopback
 make        # Synthesize, place & route, generate bitstream
 make sim    # Run simulation (Icarus Verilog)
 make lint   # Run Verilator linting
@@ -53,7 +53,7 @@ make clean  # Remove build artifacts
 After running simulation, view the waveforms with GTKWave (see main README for installation):
 
 ```bash
-gtkwave projects/03_i2s_loopback/i2s_loopback_tb.gtkw
+gtkwave projects/04_i2s_serdes_loopback/i2s_loopback_tb.gtkw
 ```
 
 The `.gtkw` save file preloads signals and sets a reasonable zoom level.
@@ -63,7 +63,7 @@ The `.gtkw` save file preloads signals and sets a reasonable zoom level.
 Run from the host (requires icesprog installed):
 
 ```bash
-make program PROJECT=03_i2s_loopback
+make program PROJECT=04_i2s_serdes_loopback
 ```
 
 Or inside the project directory:

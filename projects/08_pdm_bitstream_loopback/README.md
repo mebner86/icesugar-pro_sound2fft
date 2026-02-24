@@ -2,7 +2,7 @@
 
 Routes the raw PDM bitstream from an MP34DT01-M microphone directly to a MAX98358 PDM amplifier with no decimation or DSP. The FPGA acts purely as a clock source and CDC synchronizer.
 
-Compare with [project 07](../07_pdm_to_i2s_loopback/), which converts the same PDM microphone signal to I2S via a CIC filter.
+Compare with [project 10](../10_pdm_to_i2s_loopback/), which converts the same PDM microphone signal to I2S via a CIC filter.
 
 ## Signal Flow
 

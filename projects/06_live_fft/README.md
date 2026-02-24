@@ -1,4 +1,4 @@
-# 05_live_fft - Live FFT Spectrum Display
+# 06_live_fft - Live FFT Spectrum Display
 
 Real-time audio spectrum analyzer. Reads audio from an SPH0645 I2S microphone, computes a 256-point FFT, and displays the unique half of the frequency spectrum (bins 1-128) with logarithmic magnitude as a filled line graph on an HDMI display (800x480@60Hz).
 
@@ -50,7 +50,7 @@ python gen_twiddle.py
 
 ## Video Timing
 
-Same landscape 800x480 at 60 Hz as project 04, using portrait 480x800 timing with coordinate rotation.
+Same landscape 800x480 at 60 Hz as project 05, using portrait 480x800 timing with coordinate rotation.
 
 ## Pin Connections
 
@@ -76,7 +76,7 @@ Same landscape 800x480 at 60 Hz as project 04, using portrait 480x800 timing wit
 
 ```bash
 # From repo root (runs in Docker)
-make build 05
-make sim 05
-make program 05
+make build 06
+make sim 06
+make program 06
 ```

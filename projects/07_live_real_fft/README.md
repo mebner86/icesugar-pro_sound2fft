@@ -1,10 +1,10 @@
-# 06_live_real_fft - Real-valued FFT Spectrum Display
+# 07_live_real_fft - Real-valued FFT Spectrum Display
 
-Real-time audio spectrum analyzer with double the frequency resolution of project 05. Exploits the real-valued property of audio input to compute a **512-point real FFT using a 256-point complex FFT engine**, producing 256 unique frequency bins with no additional block RAM — compared to the naive approach of doubling the complex FFT size.
+Real-time audio spectrum analyzer with double the frequency resolution of project 06. Exploits the real-valued property of audio input to compute a **512-point real FFT using a 256-point complex FFT engine**, producing 256 unique frequency bins with no additional block RAM — compared to the naive approach of doubling the complex FFT size.
 
-## Difference from Project 05
+## Difference from Project 06
 
-| | 05_live_fft | 06_live_real_fft |
+| | 06_live_fft | 07_live_real_fft |
 |---|---|---|
 | FFT type | 256-point complex | 512-point real (via 256-point complex) |
 | Output bins | 128 (unique half) | 256 (full unique spectrum) |
@@ -74,7 +74,7 @@ python gen_twiddle.py
 
 ## Video Timing
 
-Same landscape 800x480 at 60 Hz as projects 04 and 05, using portrait 480x800 timing with coordinate rotation.
+Same landscape 800x480 at 60 Hz as projects 05 and 06, using portrait 480x800 timing with coordinate rotation.
 
 ## Pin Connections
 
@@ -100,7 +100,7 @@ Same landscape 800x480 at 60 Hz as projects 04 and 05, using portrait 480x800 ti
 
 ```bash
 # From repo root (runs in Docker)
-make build 06
-make sim 06
-make program 06
+make build 07
+make sim 07
+make program 07
 ```

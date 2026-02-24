@@ -1,4 +1,4 @@
-# 07_pdm_to_i2s_loopback
+# 10_pdm_to_i2s_loopback
 
 PDM-to-I2S audio loopback for the iCESugar-Pro board.
 
@@ -67,14 +67,14 @@ The PDM input is mapped to signed values (+1/-1) to eliminate DC offset. Three i
 From the project root, use the top-level Makefile (runs in Docker automatically):
 
 ```bash
-make build PROJECT=07_pdm_to_i2s_loopback   # Build bitstream
-make sim PROJECT=07_pdm_to_i2s_loopback     # Run simulation
+make build PROJECT=10_pdm_to_i2s_loopback   # Build bitstream
+make sim PROJECT=10_pdm_to_i2s_loopback     # Run simulation
 ```
 
 Or inside the Docker container (`make docker-shell`), run directly:
 
 ```bash
-cd projects/07_pdm_to_i2s_loopback
+cd projects/10_pdm_to_i2s_loopback
 make        # Synthesize, place & route, generate bitstream
 make sim    # Run simulation (Icarus Verilog)
 make lint   # Run Verilator linting
@@ -86,7 +86,7 @@ make clean  # Remove build artifacts
 After running simulation, view the waveforms with GTKWave (see main README for installation):
 
 ```bash
-gtkwave projects/07_pdm_to_i2s_loopback/pdm_to_i2s_loopback_tb.gtkw
+gtkwave projects/10_pdm_to_i2s_loopback/pdm_to_i2s_loopback_tb.gtkw
 ```
 
 The `.gtkw` save file preloads PDM, CIC internals (integrators, combs), and I2S output signals.
@@ -96,7 +96,7 @@ The `.gtkw` save file preloads PDM, CIC internals (integrators, combs), and I2S 
 Run from the host (requires icesprog installed):
 
 ```bash
-make program PROJECT=07_pdm_to_i2s_loopback
+make program PROJECT=10_pdm_to_i2s_loopback
 ```
 
 Or inside the project directory:
