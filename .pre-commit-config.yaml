@@ -38,6 +38,8 @@ repos:
             .*/pdm_to_i2s_loopback\.v$| # Instantiates i2s_clkgen, i2s_tx, pdm_cic
             .*/fft_uart\.v$|            # Instantiates i2s_clkgen, i2s_rx, fft_real512, uart_serializer
             .*/uart_serializer\.v$|     # Instantiates uart_tx
+            .*/uart_loopback\.v$|       # Instantiates uart_rx, uart_tx
+            .*/i2s_record_to_uart\.v$|  # Instantiates i2s_clkgen, i2s_rx, uart_rx, uart_tx
             tests/.*_top\.v$            # Test wrappers (instantiate rtl/ modules)
           )$
 

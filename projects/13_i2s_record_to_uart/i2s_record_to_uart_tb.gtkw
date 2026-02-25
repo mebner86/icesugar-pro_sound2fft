@@ -1,0 +1,64 @@
+[*]
+[*] GTKWave Analyzer v3.3.104
+[*]
+[dumpfile] "build/i2s_record_to_uart_tb.vcd"
+[savefile] "i2s_record_to_uart_tb.gtkw"
+[timestart] 0
+[size] 1600 900
+[pos] -1 -1
+*-16.000000 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] i2s_record_to_uart_tb.
+[treeopen] i2s_record_to_uart_tb.dut.
+[sst_width] 250
+[signals_width] 220
+[sst_expanded] 1
+[sst_vpaned_height] 300
+@28
+i2s_record_to_uart_tb.clk
+i2s_record_to_uart_tb.rst_n
+@200
+-State
+@22
+i2s_record_to_uart_tb.dut.state[1:0]
+@28
+i2s_record_to_uart_tb.led_b
+i2s_record_to_uart_tb.led_r
+i2s_record_to_uart_tb.led_g
+@200
+-UART Lines
+@28
+i2s_record_to_uart_tb.uart_rx_line
+i2s_record_to_uart_tb.uart_tx_line
+@200
+-UART RX (commands)
+@28
+i2s_record_to_uart_tb.dut.urx_inst.rx_sync
+i2s_record_to_uart_tb.dut.rx_valid
+@22
+i2s_record_to_uart_tb.dut.rx_data[7:0]
+@200
+-UART TX (sample data)
+@28
+i2s_record_to_uart_tb.dut.tx_valid_r
+i2s_record_to_uart_tb.dut.tx_ready
+@22
+i2s_record_to_uart_tb.dut.tx_data_r[7:0]
+@200
+-I2S
+@28
+i2s_record_to_uart_tb.mic_bclk
+i2s_record_to_uart_tb.mic_lrclk
+i2s_record_to_uart_tb.mic_data
+i2s_record_to_uart_tb.dut.rx_left_valid
+@22
+i2s_record_to_uart_tb.dut.rx_left_data[23:0]
+@200
+-BRAM / Address
+@22
+i2s_record_to_uart_tb.dut.addr_cnt
+i2s_record_to_uart_tb.dut.dump_word[15:0]
+@28
+i2s_record_to_uart_tb.dut.dump_high
+i2s_record_to_uart_tb.dut.dump_init
+[pattern_trace] 1
+[pattern_trace] 0

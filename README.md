@@ -74,9 +74,9 @@ Flashing the bitstream to the board requires USB access, which is not available 
 
 ## Python Environment Setup
 
-Some projects (currently `12_fft_uart`) include a Python host script that
-runs **outside** the Dev Container on your local machine.  All Python
-dependencies are listed in `requirements.txt` at the repo root.
+Some projects (`12_fft_uart`, `13_i2s_record_to_uart`) include a Python host
+script that runs **outside** the Dev Container on your local machine.  All
+Python dependencies are listed in `requirements.txt` at the repo root.
 
 ### Miniforge / conda (Windows — recommended)
 
@@ -150,6 +150,7 @@ gtkwave projects/01_blinky/blinky_tb.gtkw
 | `10_pdm_to_i2s_loopback` | PDM mic-to-I2S amp loopback (PDM → I2S conversion via CIC filter) |
 | `11_uart_loopback` | UART loopback via iCELink USB-CDC virtual COM port (type in terminal, FPGA echoes back) |
 | `12_fft_uart` | FFT spectrum analyzer with UART output — streams 256-bin magnitude to host Python display script |
+| `13_i2s_record_to_uart` | Record 4096 I2S samples to BRAM on command, dump as raw 16-bit PCM over UART, plot with Python |
 
 ## Project Structure
 
@@ -194,8 +195,10 @@ icesugar-pro_sound2fft/
 │   ├── 08_pdm_bitstream_loopback/ # Raw PDM bitstream loopback
 │   ├── 10_pdm_to_i2s_loopback/ # PDM mic-to-I2S amp loopback
 │   ├── 11_uart_loopback/ # UART loopback via iCELink USB-CDC
-│   └── 12_fft_uart/      # FFT spectrum over UART + Python display
-│       └── display_fft.py # Host-side spectrum viewer (run outside container)
+│   ├── 12_fft_uart/      # FFT spectrum over UART + Python display
+│   │   └── display_fft.py # Host-side spectrum viewer (run outside container)
+│   └── 13_i2s_record_to_uart/ # Record I2S audio to BRAM, dump over UART
+│       └── record_and_plot.py  # Host-side record, dump, and plot script
 ├── requirements.txt      # Python dependencies for host scripts
 └── README.md
 ```
