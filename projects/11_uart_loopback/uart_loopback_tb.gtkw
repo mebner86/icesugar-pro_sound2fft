@@ -1,0 +1,47 @@
+[*]
+[*] GTKWave Analyzer v3.3.104
+[*]
+[dumpfile] "build/uart_loopback_tb.vcd"
+[savefile] "uart_loopback_tb.gtkw"
+[timestart] 0
+[size] 1600 900
+[pos] -1 -1
+*-16.000000 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] uart_loopback_tb.
+[treeopen] uart_loopback_tb.dut.
+[sst_width] 250
+[signals_width] 200
+[sst_expanded] 1
+[sst_vpaned_height] 300
+@28
+uart_loopback_tb.clk
+uart_loopback_tb.rst_n
+@200
+-UART Lines
+@28
+uart_loopback_tb.uart_rx
+uart_loopback_tb.uart_tx
+@200
+-LEDs
+@28
+uart_loopback_tb.led_r
+uart_loopback_tb.led_g
+uart_loopback_tb.led_b
+@200
+-RX Module
+@28
+uart_loopback_tb.dut.rx_inst.rx_sync
+uart_loopback_tb.dut.rx_inst.state[1:0]
+uart_loopback_tb.dut.rx_valid
+@22
+uart_loopback_tb.dut.rx_data[7:0]
+@200
+-TX Module
+@28
+uart_loopback_tb.dut.tx_inst.state[1:0]
+uart_loopback_tb.dut.tx_valid_r
+uart_loopback_tb.dut.tx_ready
+@22
+uart_loopback_tb.dut.tx_data_r[7:0]
+[pattern_trace] 1
+[pattern_trace] 0

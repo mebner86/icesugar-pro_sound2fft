@@ -112,6 +112,7 @@ gtkwave projects/01_blinky/blinky_tb.gtkw
 | `07_live_real_fft` | Real-valued FFT optimization (512-point real FFT via 256-point complex → 256-bin display) |
 | `08_pdm_bitstream_loopback` | Raw PDM bitstream loopback (PDM mic → PDM amp, no DSP) |
 | `10_pdm_to_i2s_loopback` | PDM mic-to-I2S amp loopback (PDM → I2S conversion via CIC filter) |
+| `11_uart_loopback` | UART loopback via iCELink USB-CDC virtual COM port (type in terminal, FPGA echoes back) |
 
 ## Project Structure
 
@@ -136,6 +137,8 @@ icesugar-pro_sound2fft/
 │   ├── pll.v             # PLL for pixel/shift clocks
 │   ├── tmds_encoder.v    # DVI/HDMI 8b/10b TMDS encoder
 │   ├── tmds_serializer.v # 10:1 DDR TMDS serializer
+│   ├── uart_rx.v         # UART receiver (8N1, parameterised baud rate)
+│   ├── uart_tx.v         # UART transmitter (8N1, parameterised baud rate)
 │   └── video_timing.v    # Video sync/timing generator
 ├── tests/                # RTL unit tests (cocotb)
 │   ├── test_fft256/      # 256-point FFT engine tests
@@ -152,7 +155,8 @@ icesugar-pro_sound2fft/
 │   ├── 06_live_fft/      # Live FFT spectrum analyzer
 │   ├── 07_live_real_fft/ # Real-valued FFT (256 bins)
 │   ├── 08_pdm_bitstream_loopback/ # Raw PDM bitstream loopback
-│   └── 10_pdm_to_i2s_loopback/ # PDM mic-to-I2S amp loopback
+│   ├── 10_pdm_to_i2s_loopback/ # PDM mic-to-I2S amp loopback
+│   └── 11_uart_loopback/ # UART loopback via iCELink USB-CDC
 └── README.md
 ```
 
