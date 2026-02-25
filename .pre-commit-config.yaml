@@ -36,6 +36,8 @@ repos:
             .*/live_fft\.v$|          # Instantiates pll, fft256, i2s_*, tmds_*
             .*/live_real_fft\.v$|    # Instantiates pll, fft_real512, i2s_*, tmds_*
             .*/pdm_to_i2s_loopback\.v$| # Instantiates i2s_clkgen, i2s_tx, pdm_cic
+            .*/fft_uart\.v$|            # Instantiates i2s_clkgen, i2s_rx, fft_real512, uart_serializer
+            .*/uart_serializer\.v$|     # Instantiates uart_tx
             tests/.*_top\.v$            # Test wrappers (instantiate rtl/ modules)
           )$
 

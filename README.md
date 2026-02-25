@@ -72,6 +72,42 @@ make clean       # All projects
 
 Flashing the bitstream to the board requires USB access, which is not available inside the dev container. Copy the built bitstream from `projects/<project>/build/<project>.bit` to your host machine and flash it using [icesprog](https://github.com/wuxx/icesugar) or by copying to the USB drive that appears when the board is plugged in.
 
+## Python Environment Setup
+
+Some projects (currently `12_fft_uart`) include a Python host script that
+runs **outside** the Dev Container on your local machine.  All Python
+dependencies are listed in `requirements.txt` at the repo root.
+
+### Miniforge / conda (Windows — recommended)
+
+```bash
+conda create -n sound2fft python=3.11
+conda activate sound2fft
+pip install -r requirements.txt
+```
+
+### pip venv (Linux / macOS)
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Dev Container (for IDE support only)
+
+The scripts can be edited and linted inside the container.  Create a venv
+there for IntelliSense — the COM port won't be accessible, but all static
+analysis works normally:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Point VS Code's Python extension to `.venv/bin/python`.
+
 ## Development Setup
 
 ### Pre-commit Hooks
@@ -113,6 +149,7 @@ gtkwave projects/01_blinky/blinky_tb.gtkw
 | `08_pdm_bitstream_loopback` | Raw PDM bitstream loopback (PDM mic → PDM amp, no DSP) |
 | `10_pdm_to_i2s_loopback` | PDM mic-to-I2S amp loopback (PDM → I2S conversion via CIC filter) |
 | `11_uart_loopback` | UART loopback via iCELink USB-CDC virtual COM port (type in terminal, FPGA echoes back) |
+| `12_fft_uart` | FFT spectrum analyzer with UART output — streams 256-bin magnitude to host Python display script |
 
 ## Project Structure
 
@@ -156,7 +193,10 @@ icesugar-pro_sound2fft/
 │   ├── 07_live_real_fft/ # Real-valued FFT (256 bins)
 │   ├── 08_pdm_bitstream_loopback/ # Raw PDM bitstream loopback
 │   ├── 10_pdm_to_i2s_loopback/ # PDM mic-to-I2S amp loopback
-│   └── 11_uart_loopback/ # UART loopback via iCELink USB-CDC
+│   ├── 11_uart_loopback/ # UART loopback via iCELink USB-CDC
+│   └── 12_fft_uart/      # FFT spectrum over UART + Python display
+│       └── display_fft.py # Host-side spectrum viewer (run outside container)
+├── requirements.txt      # Python dependencies for host scripts
 └── README.md
 ```
 

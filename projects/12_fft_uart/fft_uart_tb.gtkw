@@ -1,0 +1,49 @@
+[*]
+[*] GTKWave Analyzer v3.3.104
+[*]
+[dumpfile] "build/fft_uart_tb.vcd"
+[savefile] "fft_uart_tb.gtkw"
+[timestart] 0
+[size] 1600 900
+[pos] -1 -1
+*-16.000000 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] fft_uart_tb.
+[treeopen] fft_uart_tb.dut.
+[sst_width] 260
+[signals_width] 200
+[sst_expanded] 1
+[sst_vpaned_height] 300
+@28
+fft_uart_tb.clk
+fft_uart_tb.rst_n
+@200
+-FFT Input
+@22
+fft_uart_tb.mag_addr[7:0]
+@22
+fft_uart_tb.mag_data[8:0]
+@28
+fft_uart_tb.mag_valid
+@200
+-Serializer State
+@22
+fft_uart_tb.dut.state[1:0]
+@28
+fft_uart_tb.dut.frame_ready
+@22
+fft_uart_tb.dut.tx_idx[7:0]
+@200
+-TX Handshake
+@28
+fft_uart_tb.dut.tx_valid_r
+@28
+fft_uart_tb.dut.tx_ready
+@22
+fft_uart_tb.dut.tx_data_r[7:0]
+@200
+-UART Output
+@28
+fft_uart_tb.uart_tx_out
+fft_uart_tb.tx_active
+[pattern_trace] 1
+[pattern_trace] 0
