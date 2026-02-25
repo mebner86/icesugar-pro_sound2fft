@@ -1,0 +1,42 @@
+[*]
+[*] GTKWave Analyzer v3.3.104
+[*]
+[dumpfile] "build/pdm_bitstream_loopback_tb.vcd"
+[savefile] "pdm_bitstream_loopback_tb.gtkw"
+[timestart] 0
+[size] 1600 900
+[pos] -1 -1
+*-16.000000 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] pdm_bitstream_loopback_tb.
+[treeopen] pdm_bitstream_loopback_tb.dut.
+[sst_width] 250
+[signals_width] 200
+[sst_expanded] 1
+[sst_vpaned_height] 300
+@28
+pdm_bitstream_loopback_tb.clk_25m
+pdm_bitstream_loopback_tb.rst_n
+@200
+-PDM Microphone
+@28
+pdm_bitstream_loopback_tb.mic_clk
+pdm_bitstream_loopback_tb.mic_dat
+pdm_bitstream_loopback_tb.mic_sel
+@200
+-Synchronizer
+@28
+pdm_bitstream_loopback_tb.dut.pdm_sync1
+pdm_bitstream_loopback_tb.dut.pdm_sync2
+@200
+-Amplifier
+@28
+pdm_bitstream_loopback_tb.amp_clk
+pdm_bitstream_loopback_tb.amp_dat
+@200
+-LEDs
+@28
+pdm_bitstream_loopback_tb.led_r
+pdm_bitstream_loopback_tb.led_g
+pdm_bitstream_loopback_tb.led_b
+[pattern_trace] 1
+[pattern_trace] 0

@@ -59,9 +59,11 @@ Both `mic_clk` and `amp_clk` are driven from the same register, so they are phas
 ```bash
 cd projects/08_pdm_bitstream_loopback
 make          # synthesize, place-and-route, generate bitstream
+make sim      # run testbench with Icarus Verilog
+make waves    # open VCD in GTKWave
 make program  # flash to board via icesprog
 make lint     # static analysis with Verilator
 make clean    # remove build artifacts
 ```
 
-Toolchain: Yosys · nextpnr-ecp5 · ecppack · icesprog
+Toolchain: Yosys · nextpnr-ecp5 · ecppack · icesprog · iverilog
