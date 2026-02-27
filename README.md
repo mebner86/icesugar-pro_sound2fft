@@ -147,6 +147,7 @@ gtkwave projects/01_blinky/blinky_tb.gtkw
 | `06_live_fft` | Live FFT spectrum analyzer (I2S mic → 256-point FFT → 128-bin HDMI graph) |
 | `07_live_real_fft` | Real-valued FFT optimization (512-point real FFT via 256-point complex → 256-bin display) |
 | `08_pdm_bitstream_loopback` | Raw PDM bitstream loopback (PDM mic → PDM amp, no DSP) |
+| `09_pdm_pcm_loopback` | PDM PCM loopback — CIC decimation → signed gain/mute → sigma-delta re-modulation → PDM amp |
 | `10_pdm_to_i2s_loopback` | PDM mic-to-I2S amp loopback (PDM → I2S conversion via CIC filter) |
 | `11_uart_loopback` | UART loopback via iCELink USB-CDC virtual COM port (type in terminal, FPGA echoes back) |
 | `12_fft_uart` | FFT spectrum analyzer with UART output — streams 256-bin magnitude to host Python display script |
@@ -172,6 +173,7 @@ icesugar-pro_sound2fft/
 │   ├── i2s_rx.v          # I2S serial-to-parallel receiver
 │   ├── i2s_tx.v          # I2S parallel-to-serial transmitter
 │   ├── pdm_cic.v         # PDM CIC decimation filter (sinc³)
+│   ├── pdm_modulator.v   # 1st-order sigma-delta PDM modulator (PCM → PDM)
 │   ├── pll.v             # PLL for pixel/shift clocks
 │   ├── tmds_encoder.v    # DVI/HDMI 8b/10b TMDS encoder
 │   ├── tmds_serializer.v # 10:1 DDR TMDS serializer
@@ -193,6 +195,7 @@ icesugar-pro_sound2fft/
 │   ├── 06_live_fft/      # Live FFT spectrum analyzer
 │   ├── 07_live_real_fft/ # Real-valued FFT (256 bins)
 │   ├── 08_pdm_bitstream_loopback/ # Raw PDM bitstream loopback
+│   ├── 09_pdm_pcm_loopback/ # PDM PCM loopback with signed gain and mute
 │   ├── 10_pdm_to_i2s_loopback/ # PDM mic-to-I2S amp loopback
 │   ├── 11_uart_loopback/ # UART loopback via iCELink USB-CDC
 │   ├── 12_fft_uart/      # FFT spectrum over UART + Python display
