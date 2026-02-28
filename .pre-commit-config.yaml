@@ -41,6 +41,7 @@ repos:
             .*/uart_serializer\.v$|     # Instantiates uart_tx
             .*/uart_loopback\.v$|       # Instantiates uart_rx, uart_tx
             .*/i2s_record_to_uart\.v$|  # Instantiates i2s_clkgen, i2s_rx, uart_rx, uart_tx
+            .*/pdm_hil\.v$|             # Instantiates pdm_cic, pdm_modulator, uart_rx, uart_tx
             tests/.*_top\.v$            # Test wrappers (instantiate rtl/ modules)
           )$
 

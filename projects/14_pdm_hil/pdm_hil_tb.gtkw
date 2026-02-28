@@ -1,0 +1,60 @@
+[*]
+[*] GTKWave Analyzer v3.3.x  Save File
+[*]
+[dumpfile] "build/pdm_hil_tb.vcd"
+[dumpfile_mtime] "Thu Jan  1 00:00:00 2026"
+[dumpfile_size] 0
+[savefile] "pdm_hil_tb.gtkw"
+[timestart] 0
+[size] 1400 900
+[pos] -1 -1
+*-22.000000 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] pdm_hil_tb.
+[sst_width] 200
+[signals_width] 200
+[sst_expanded] 1
+[sst_vpaned_height] 300
+@28
+pdm_hil_tb.clk
+pdm_hil_tb.rst_n
+@8
+-
+@28
+pdm_hil_tb.uart_rx_line
+pdm_hil_tb.uart_tx_line
+@8
+-
+@28
+pdm_hil_tb.mic_clk_w
+pdm_hil_tb.mic_dat_r
+pdm_hil_tb.amp_clk_w
+pdm_hil_tb.amp_dat_w
+@8
+-
+@28
+pdm_hil_tb.led_b
+pdm_hil_tb.led_r
+pdm_hil_tb.led_g
+@8
+-
+@22
+pdm_hil_tb.dut.state[2:0]
+pdm_hil_tb.dut.addr_cnt[12:0]
+pdm_hil_tb.dut.upload_high
+pdm_hil_tb.dut.upload_hi_byte[7:0]
+@8
+-
+@22
+pdm_hil_tb.dut.pcm_raw[15:0]
+pdm_hil_tb.dut.pcm_valid
+pdm_hil_tb.dut.pcm_held[15:0]
+pdm_hil_tb.dut.replay_word[15:0]
+pdm_hil_tb.dut.dump_word[15:0]
+@8
+-
+@22
+pdm_hil_tb.dut.tx_data_r[7:0]
+pdm_hil_tb.dut.tx_valid_r
+pdm_hil_tb.dut.tx_ready
+[pattern_trace] 1
+[pattern_trace] 0
