@@ -72,9 +72,26 @@ make clean       # All projects
 
 Flashing the bitstream to the board requires USB access, which is not available inside the dev container. Copy the built bitstream from `projects/<project>/build/<project>.bit` to your host machine and flash it using [icesprog](https://github.com/wuxx/icesugar) or by copying to the USB drive that appears when the board is plugged in.
 
+**Remote development via Raspberry Pi Zero:** One convenient approach is to connect the FPGA to a Raspberry Pi Zero (running Raspberry Pi OS Lite). Install the USB library and drop in a pre-built `icesprog` binary:
+
+```bash
+sudo apt install libusb-1.0-0
+sudo wget -O /usr/local/bin/icesprog https://github.com/wuxx/icesugar/raw/refs/heads/master/tools/icesprog.arm64
+sudo chmod +x /usr/local/bin/icesprog
+```
+
+Then `scp` the built `.bit` file to the Pi and flash it from there:
+
+```bash
+scp projects/<project>/build/<project>.bit <username>@<pi-address>:~
+ssh <username>@<pi-address> "sudo icesprog <project>.bit"
+```
+
+> **Tip:** SSH key-based authentication is handy here — it avoids repeated password prompts when running `scp` and `ssh` commands. Search online for `ssh-keygen` and `ssh-copy-id` to set it up.
+
 ## Python Environment Setup
 
-Some projects (`12_fft_uart`, `13_i2s_record_to_uart`) include a Python host
+Some projects (`12_fft_uart`, `13_i2s_record_to_uart`, `14_pdm_hil`) include a Python host
 script that runs **outside** the Dev Container on your local machine.  All
 Python dependencies are listed in `requirements.txt` at the repo root.
 
@@ -152,6 +169,7 @@ gtkwave projects/01_blinky/blinky_tb.gtkw
 | `11_uart_loopback` | UART loopback via iCELink USB-CDC virtual COM port (type in terminal, FPGA echoes back) |
 | `12_fft_uart` | FFT spectrum analyzer with UART output — streams 256-bin magnitude to host Python display script |
 | `13_i2s_record_to_uart` | Record 4096 I2S samples to BRAM on command, dump as raw 16-bit PCM over UART, plot with Python |
+| `14_pdm_hil` | Hardware-in-the-loop transfer function characterizer — upload test signal, replay through speaker while recording mic, dump result; compute H(f) on host |
 
 ## Project Structure
 
@@ -200,8 +218,10 @@ icesugar-pro_sound2fft/
 │   ├── 11_uart_loopback/ # UART loopback via iCELink USB-CDC
 │   ├── 12_fft_uart/      # FFT spectrum over UART + Python display
 │   │   └── display_fft.py # Host-side spectrum viewer (run outside container)
-│   └── 13_i2s_record_to_uart/ # Record I2S audio to BRAM, dump over UART
-│       └── record_and_plot.py  # Host-side record, dump, and plot script
+│   ├── 13_i2s_record_to_uart/ # Record I2S audio to BRAM, dump over UART
+│   │   └── record_and_plot.py  # Host-side record, dump, and plot script
+│   └── 14_pdm_hil/       # HIL transfer function characterizer
+│       └── hil_test.py        # Host-side HIL measurement script
 ├── requirements.txt      # Python dependencies for host scripts
 └── README.md
 ```
