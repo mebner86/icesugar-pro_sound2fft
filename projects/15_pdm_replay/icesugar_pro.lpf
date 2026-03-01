@@ -1,0 +1,25 @@
+# iCESugar-Pro pin constraints for pdm_replay
+# ECP5-25F in CABGA256 package
+
+# Clock - 25 MHz oscillator
+LOCATE COMP "clk_25m" SITE "P6";
+IOBUF PORT "clk_25m" IO_TYPE=LVCMOS33;
+FREQUENCY PORT "clk_25m" 25 MHZ;
+
+# User button (active low with pull-up)
+LOCATE COMP "rst_n" SITE "L14";
+IOBUF PORT "rst_n" IO_TYPE=LVCMOS33 PULLMODE=UP;
+
+# Onboard RGB LED (active low)
+LOCATE COMP "led_r" SITE "B11";
+LOCATE COMP "led_g" SITE "A11";
+LOCATE COMP "led_b" SITE "A12";
+IOBUF PORT "led_r" IO_TYPE=LVCMOS33;
+IOBUF PORT "led_g" IO_TYPE=LVCMOS33;
+IOBUF PORT "led_b" IO_TYPE=LVCMOS33;
+
+# MAX98358 PDM amplifier - Port4
+LOCATE COMP "amp_clk" SITE "J4";
+LOCATE COMP "amp_dat" SITE "J3";
+IOBUF PORT "amp_clk" IO_TYPE=LVCMOS33;
+IOBUF PORT "amp_dat" IO_TYPE=LVCMOS33;

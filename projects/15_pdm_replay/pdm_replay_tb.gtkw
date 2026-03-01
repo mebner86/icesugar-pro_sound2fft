@@ -1,0 +1,53 @@
+[*]
+[*] GTKWave Analyzer v3.3.104
+[*]
+[dumpfile] "build/pdm_replay_tb.vcd"
+[savefile] "pdm_replay_tb.gtkw"
+[timestart] 0
+[size] 1600 900
+[pos] -1 -1
+*-16.000000 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] pdm_replay_tb.
+[treeopen] pdm_replay_tb.dut.
+[sst_width] 250
+[signals_width] 220
+[sst_expanded] 1
+[sst_vpaned_height] 300
+@28
+pdm_replay_tb.clk
+pdm_replay_tb.rst_n
+@200
+-PDM Clock
+@28
+pdm_replay_tb.dut.pdm_clk_r
+pdm_replay_tb.dut.pdm_valid
+@200
+-PCM Divider
+@22
+pdm_replay_tb.dut.dec_cnt[5:0]
+@28
+pdm_replay_tb.dut.pcm_valid
+@200
+-Sine ROM
+@22
+pdm_replay_tb.dut.sine_addr[5:0]
+pdm_replay_tb.dut.pcm_held[15:0]
+@200
+-Sigma-Delta Modulator
+@22
+pdm_replay_tb.dut.mod.accum[15:0]
+@28
+pdm_replay_tb.dut.mod.pdm_out
+@200
+-Amplifier Output
+@28
+pdm_replay_tb.amp_clk
+pdm_replay_tb.amp_dat
+@200
+-LEDs
+@28
+pdm_replay_tb.led_r
+pdm_replay_tb.led_g
+pdm_replay_tb.led_b
+[pattern_trace] 1
+[pattern_trace] 0
