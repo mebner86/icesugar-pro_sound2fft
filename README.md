@@ -170,6 +170,7 @@ gtkwave projects/01_blinky/blinky_tb.gtkw
 | `12_fft_uart` | FFT spectrum analyzer with UART output — streams 256-bin magnitude to host Python display script |
 | `13_i2s_record_to_uart` | Record 4096 I2S samples to BRAM on command, dump as raw 16-bit PCM over UART, plot with Python |
 | `14_pdm_hil` | Hardware-in-the-loop transfer function characterizer — upload test signal, replay through speaker while recording mic, dump result; compute H(f) on host |
+| `15_pdm_replay` | Self-contained sine tone generator — 64-sample ROM → sigma-delta → PDM amp (~763 Hz) |
 
 ## Project Structure
 
@@ -191,6 +192,7 @@ icesugar-pro_sound2fft/
 │   ├── i2s_rx.v          # I2S serial-to-parallel receiver
 │   ├── i2s_tx.v          # I2S parallel-to-serial transmitter
 │   ├── pdm_cic.v         # PDM CIC decimation filter (sinc³)
+│   ├── pdm_clkgen.v      # PDM clock generator (parameterised divider + rising-edge strobe)
 │   ├── pdm_modulator.v   # 1st-order sigma-delta PDM modulator (PCM → PDM)
 │   ├── pll.v             # PLL for pixel/shift clocks
 │   ├── tmds_encoder.v    # DVI/HDMI 8b/10b TMDS encoder
@@ -203,7 +205,9 @@ icesugar-pro_sound2fft/
 │   ├── test_i2s_clkgen/  # I2S clock generator tests
 │   ├── test_i2s_rx/      # I2S receiver tests
 │   ├── test_i2s_tx/      # I2S transmitter tests
-│   └── test_pdm_cic/     # PDM CIC decimation filter tests
+│   ├── test_pdm_cic/     # PDM CIC decimation filter tests
+│   ├── test_pdm_clkgen/  # PDM clock generator tests
+│   └── test_pdm_modulator/ # PDM sigma-delta modulator tests
 ├── projects/             # FPGA projects
 │   ├── 01_blinky/        # LED blinky example
 │   ├── 02_hdmi_test/     # HDMI test pattern generator
@@ -220,8 +224,9 @@ icesugar-pro_sound2fft/
 │   │   └── display_fft.py # Host-side spectrum viewer (run outside container)
 │   ├── 13_i2s_record_to_uart/ # Record I2S audio to BRAM, dump over UART
 │   │   └── record_and_plot.py  # Host-side record, dump, and plot script
-│   └── 14_pdm_hil/       # HIL transfer function characterizer
-│       └── hil_test.py        # Host-side HIL measurement script
+│   ├── 14_pdm_hil/       # HIL transfer function characterizer
+│   │   └── hil_test.py        # Host-side HIL measurement script
+│   └── 15_pdm_replay/    # Self-contained sine tone generator
 ├── requirements.txt      # Python dependencies for host scripts
 └── README.md
 ```

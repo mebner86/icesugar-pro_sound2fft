@@ -5,8 +5,12 @@ CONSTRAINTS = icesugar_pro.lpf
 DEVICE = 25k
 PACKAGE = CABGA256
 
-# Source files (no shared RTL modules needed — design is self-contained)
-VERILOG_SRC = pdm_bitstream_loopback.v
+# Shared RTL modules
+RTL_DIR = ../../rtl
+
+# Source files
+VERILOG_SRC = pdm_bitstream_loopback.v \
+              $(RTL_DIR)/pdm_clkgen.v
 
 # Output files
 BUILD_DIR = build

@@ -29,25 +29,17 @@ module pdm_bitstream_loopback (
 
     // -------------------------------------------------------------------------
     // PDM clock generation: 25 MHz / 8 = 3.125 MHz
-    // Toggle every 4 system clocks: period = 8 × 40 ns = 320 ns
-    // Within MP34DT01-M spec (1–3.25 MHz) and MAX98358 spec.
     // -------------------------------------------------------------------------
-    reg [2:0] clk_cnt;
-    reg       pdm_clk_r;
+    wire pdm_clk_r;
 
-    always @(posedge clk_25m or negedge rst_n) begin
-        if (!rst_n) begin
-            clk_cnt   <= 3'd0;
-            pdm_clk_r <= 1'b0;
-        end else begin
-            if (clk_cnt == 3'd3) begin
-                clk_cnt   <= 3'd0;
-                pdm_clk_r <= ~pdm_clk_r;
-            end else begin
-                clk_cnt <= clk_cnt + 3'd1;
-            end
-        end
-    end
+    /* verilator lint_off PINCONNECTEMPTY */
+    pdm_clkgen pdm_clk_inst (
+        .clk          (clk_25m),
+        .rst_n        (rst_n),
+        .pdm_clk      (pdm_clk_r),
+        .pdm_clk_rise ()            // Unused — raw bitstream loopback
+    );
+    /* verilator lint_on PINCONNECTEMPTY */
 
     // -------------------------------------------------------------------------
     // Microphone control

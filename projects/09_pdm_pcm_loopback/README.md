@@ -82,9 +82,9 @@ Amplification uses a left-shift with signed saturation clamping — when the shi
 
 ### PDM Clock
 
-A 3-bit divider produces a 3.125 MHz clock (25 MHz / 8). A rising-edge
-detector on this clock generates a single-cycle `pdm_valid` strobe every
-8 system clocks, used by both the CIC and the modulator.
+The shared `rtl/pdm_clkgen.v` module produces a 3.125 MHz clock (25 MHz / 8)
+and a single-cycle `pdm_clk_rise` strobe every 8 system clocks, used as
+`pdm_valid` by both the CIC and the modulator.
 
 ### CIC Decimation
 

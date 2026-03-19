@@ -10,6 +10,7 @@ RTL_DIR = ../../rtl
 
 # Source files
 VERILOG_SRC = pdm_replay.v \
+              $(RTL_DIR)/pdm_clkgen.v \
               $(RTL_DIR)/pdm_modulator.v
 
 # Output files

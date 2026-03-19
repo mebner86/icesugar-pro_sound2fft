@@ -61,32 +61,15 @@ module pdm_hil #(
     // =========================================================================
     // PDM clock generation: 25 MHz / 8 = 3.125 MHz
     // =========================================================================
-    reg [2:0] clk_cnt;
-    reg       pdm_clk_r;
+    wire pdm_clk_r;
+    wire pdm_valid;
 
-    always @(posedge clk_25m or negedge rst_n) begin
-        if (!rst_n) begin
-            clk_cnt   <= 3'd0;
-            pdm_clk_r <= 1'b0;
-        end else begin
-            if (clk_cnt == 3'd3) begin
-                clk_cnt   <= 3'd0;
-                pdm_clk_r <= ~pdm_clk_r;
-            end else begin
-                clk_cnt <= clk_cnt + 3'd1;
-            end
-        end
-    end
-
-    // Rising-edge strobe: single cycle at the start of each PDM clock high phase
-    reg pdm_clk_prev;
-    always @(posedge clk_25m or negedge rst_n) begin
-        if (!rst_n)
-            pdm_clk_prev <= 1'b0;
-        else
-            pdm_clk_prev <= pdm_clk_r;
-    end
-    wire pdm_valid = pdm_clk_r && !pdm_clk_prev;
+    pdm_clkgen pdm_clk_inst (
+        .clk          (clk_25m),
+        .rst_n        (rst_n),
+        .pdm_clk      (pdm_clk_r),
+        .pdm_clk_rise (pdm_valid)
+    );
 
     // =========================================================================
     // 2-stage synchronizer for PDM data input

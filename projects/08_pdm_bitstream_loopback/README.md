@@ -43,7 +43,7 @@ The MAX98358 SD_MODE pin is pulled to 3.3 V via a 2 kΩ resistor on the module (
 
 ### PDM Clock
 
-A simple 3-bit divider produces a 3.125 MHz clock (25 MHz / 8). This is within the valid range for both devices:
+The shared `rtl/pdm_clkgen.v` module produces a 3.125 MHz clock (25 MHz / 8). This is within the valid range for both devices:
 
 - MP34DT01-M: 1.0–3.25 MHz
 - MAX98358: see datasheet Table 2 for PDM_CLK rates
