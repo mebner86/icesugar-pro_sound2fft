@@ -19,9 +19,11 @@ Each 32-bit slot on `sdata` (one per channel per frame) is structured as:
 
 | Bits | Content |
 |------|---------|
-| bit 0 | I2S delay — always 0 |
-| bits 1–24 | 24-bit sample, MSB first |
-| bits 25–31 | padding zeros |
+| bits 0–23 | 24-bit sample, MSB first |
+| bits 24–31 | padding zeros |
+
+The 1-BCLK I2S delay is provided implicitly by the register pipeline between
+`i2s_clkgen` and `i2s_tx`, not by an explicit delay slot in the data stream.
 
 Data is valid on `sdata` during `bclk` high; the receiver samples on the
 falling edge.
@@ -42,7 +44,7 @@ Captures one 32-bit I2S slot from `sdata`:
    an LRCLK boundary.
 2. Calls `wait_for_bclk_fall` 32 times, sampling `sdata` after each falling
    edge.
-3. Returns the decoded 24-bit integer (bits 1–24, MSB-first) and the raw 32-bit
+3. Returns the decoded 24-bit integer (bits 0–23, MSB-first) and the raw 32-bit
    list for inspection.
 
 This makes the testbench act as a software I2S receiver, verifying the TX
@@ -53,13 +55,12 @@ output independently of `i2s_rx`.
 - **test_reset_output** — asserts `sdata` is 0 immediately after reset.
 - **test_left_channel_data** — drives a known value on `left_data`, waits for
   an `lrclk` falling edge (start of the left channel slot), captures 32 serial
-  bits with `capture_i2s_slot`, and checks both the delay bit (must be 0) and
-  the decoded 24-bit value.
+  bits with `capture_i2s_slot`, and checks the decoded 24-bit value.
 - **test_right_channel_data** — same for the right channel, triggered on the
   `lrclk` rising edge.
 - **test_padding_bits_zero** — drives all-ones (`0xFFFFFF`) on both channels to
   maximise the chance of leaking data into padding; captures a slot and asserts
-  bits 25–31 are all 0.
+  bits 24–31 are all 0.
 - **test_alternating_frames** — iterates over two `(left, right)` value pairs,
   updating the inputs before each frame, then captures and verifies both the
   left and right slots; confirms the TX latches new data at each LRCLK

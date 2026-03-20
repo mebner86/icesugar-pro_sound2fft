@@ -1,7 +1,8 @@
 // I2S Receiver
 // Deserializes I2S serial data into parallel left/right channel samples.
-// Assumes standard I2S format: MSB-first, 1-BCLK delay after LRCLK transition,
-// DATA_BITS of data followed by padding zeros in a 32-bit slot.
+// Uses separate shift registers per channel, steered by the delayed LRCLK.
+// The 1-BCLK I2S delay is handled naturally by lrclk_prev lagging lrclk
+// by one BCLK cycle through the register pipeline from i2s_clkgen.
 
 module i2s_rx #(
     parameter DATA_BITS = 24
@@ -19,14 +20,21 @@ module i2s_rx #(
     output reg                   right_valid
 );
 
-    reg [4:0]           bit_counter;
-    reg [DATA_BITS-1:0] shift_reg;
-    reg                 lrclk_prev;
+    /* verilator lint_off UNUSEDSIGNAL */
+    reg [31:0] left_shift;
+    reg [31:0] right_shift;
+    /* verilator lint_on UNUSEDSIGNAL */
+    reg        lrclk_prev;
+
+    // Include current sdata to form the complete 32-bit shifted value,
+    // since the non-blocking shift hasn't taken effect at latch time.
+    wire [31:0] left_captured  = {left_shift[30:0], sdata};
+    wire [31:0] right_captured = {right_shift[30:0], sdata};
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            bit_counter <= 5'd0;
-            shift_reg   <= 0;
+            left_shift  <= 0;
+            right_shift <= 0;
             lrclk_prev  <= 1'b0;
             left_data   <= 0;
             left_valid  <= 1'b0;
@@ -39,29 +47,24 @@ module i2s_rx #(
             if (bclk_falling) begin
                 lrclk_prev <= lrclk;
 
+                // Shift sdata into the active channel. lrclk_prev lags
+                // lrclk by one BCLK, providing the standard I2S delay.
+                if (lrclk_prev)
+                    right_shift <= right_captured;
+                else
+                    left_shift <= left_captured;
+
+                // LRCLK transition: latch the completed channel
                 if (lrclk != lrclk_prev) begin
-                    // LRCLK just transitioned — latch completed channel, reset counter
-                    // The channel that just ended is identified by lrclk_prev
                     if (!lrclk_prev) begin
-                        // Was left channel (LRCLK low), now transitioning to right
-                        left_data  <= shift_reg;
+                        // Was left (LRCLK low), now right — left complete
+                        left_data  <= left_captured[31:32-DATA_BITS];
                         left_valid <= 1'b1;
                     end else begin
-                        // Was right channel (LRCLK high), now transitioning to left
-                        right_data  <= shift_reg;
+                        // Was right (LRCLK high), now left — right complete
+                        right_data  <= right_captured[31:32-DATA_BITS];
                         right_valid <= 1'b1;
                     end
-                    bit_counter <= 5'd0;
-                end else if (bit_counter == 5'd0) begin
-                    // Bit 0 of the slot is the 1-cycle I2S delay — skip it
-                    bit_counter <= 5'd1;
-                end else if (bit_counter <= DATA_BITS) begin
-                    // Shift in data bits MSB-first (bits 1..DATA_BITS of the slot)
-                    shift_reg   <= {shift_reg[DATA_BITS-2:0], sdata};
-                    bit_counter <= bit_counter + 5'd1;
-                end else begin
-                    // Padding bits — just count
-                    bit_counter <= bit_counter + 5'd1;
                 end
             end
         end

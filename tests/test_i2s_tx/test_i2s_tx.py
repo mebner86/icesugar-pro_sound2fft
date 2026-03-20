@@ -1,7 +1,9 @@
 """Unit tests for i2s_tx module (via i2s_tx_top wrapper with i2s_clkgen).
 
 CLK_DIV=2, DATA_BITS=24. BCLK period = 4 system clocks.
-I2S format: MSB-first, 1-BCLK delay after LRCLK transition, 24 data bits, 8 padding bits.
+I2S format: MSB-first, 24 data bits, 8 padding bits per 32-bit slot.
+The 1-BCLK I2S delay is provided implicitly by the register pipeline
+between i2s_clkgen and i2s_tx.
 
 Note: sdata is sampled by detecting bclk 1->0 transitions via RisingEdge(clk)
 rather than using the bclk_falling wire or FallingEdge(bclk). After an LRCLK
@@ -53,8 +55,8 @@ async def capture_i2s_slot(dut):
         await wait_for_bclk_fall(dut)
         bits.append(int(dut.sdata.value))
 
-    # bits[0] = delay bit (should be 0), bits[1..24] = data, bits[25..31] = padding
-    data_bits = bits[1 : DATA_BITS + 1]
+    # bits[0..23] = data MSB-first, bits[24..31] = padding
+    data_bits = bits[:DATA_BITS]
     value = 0
     for b in data_bits:
         value = (value << 1) | b
@@ -88,7 +90,6 @@ async def test_left_channel_data(dut):
     await FallingEdge(dut.lrclk)
     value, bits = await capture_i2s_slot(dut)
 
-    assert bits[0] == 0, "I2S delay bit should be 0"
     assert (
         value == test_left
     ), f"Left channel: got 0x{value:06X}, expected 0x{test_left:06X}"
@@ -110,7 +111,6 @@ async def test_right_channel_data(dut):
     await RisingEdge(dut.lrclk)
     value, bits = await capture_i2s_slot(dut)
 
-    assert bits[0] == 0, "I2S delay bit should be 0"
     assert (
         value == test_right
     ), f"Right channel: got 0x{value:06X}, expected 0x{test_right:06X}"
@@ -130,7 +130,7 @@ async def test_padding_bits_zero(dut):
     await FallingEdge(dut.lrclk)
     _, bits = await capture_i2s_slot(dut)
 
-    padding = bits[DATA_BITS + 1 :]
+    padding = bits[DATA_BITS:]
     assert all(b == 0 for b in padding), f"Padding bits should be 0, got {padding}"
 
 
