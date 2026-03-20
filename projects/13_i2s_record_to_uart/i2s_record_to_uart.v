@@ -5,7 +5,7 @@
 // UART protocol (115200 8N1):
 //   'R' (0x52) — CMD_RECORD: reset address counter and start capturing;
 //                auto-stops when NUM_SAMPLES frames have been received.
-//   'D' (0x44) — CMD_DUMP:   stream NUM_SAMPLES×2 bytes (big-endian 16-bit)
+//   'D' (0x44) — CMD_DUMP:   stream NUM_SAMPLES×3 bytes (big-endian 24-bit)
 //                over UART.
 // Commands received while not in IDLE are ignored.
 //
@@ -18,7 +18,7 @@ module i2s_record_to_uart #(
     parameter CLK_FREQ   = 25_000_000,  // System clock frequency in Hz
     parameter BAUD_RATE  = 115_200,     // UART baud rate
     parameter CLK_DIV    = 4,           // I2S BCLK half-period (BCLK = clk / (2*CLK_DIV))
-    parameter NUM_SAMPLES = 4096        // Number of 16-bit samples to record
+    parameter NUM_SAMPLES = 4096        // Number of 24-bit samples to record
 ) (
     input  wire clk_25m,
     input  wire rst_n,
@@ -135,16 +135,16 @@ module i2s_record_to_uart #(
 
     reg [1:0]          state;
     reg [ADDR_BITS:0]  addr_cnt;   // One extra bit to detect NUM_SAMPLES exactly
-    reg                dump_high;  // 1 = MSB pending, 0 = LSB pending
+    reg [1:0]          dump_byte;  // 2 = high, 1 = mid, 0 = low byte pending
     reg                dump_init;  // 1 = waiting 1 cycle for BRAM registered output
 
-    reg [15:0] sample_ram [0:NUM_SAMPLES-1];
-    reg [15:0] dump_word;   // Registered output of sample_ram
+    reg [23:0] sample_ram [0:NUM_SAMPLES-1];
+    reg [23:0] dump_word;   // Registered output of sample_ram
 
     // Synchronous write: separate always block (no async reset) so Yosys infers EBR
     always @(posedge clk_25m)
         if (state == S_RECORD && rx_left_valid)
-            sample_ram[addr_cnt[ADDR_BITS-1:0]] <= rx_left_data[23:8];
+            sample_ram[addr_cnt[ADDR_BITS-1:0]] <= rx_left_data;
 
     // Synchronous read: 1-cycle latency
     always @(posedge clk_25m)
@@ -154,7 +154,7 @@ module i2s_record_to_uart #(
         if (!rst_n) begin
             state      <= S_IDLE;
             addr_cnt   <= 0;
-            dump_high  <= 1'b0;
+            dump_byte  <= 2'd0;
             dump_init  <= 1'b0;
             tx_data_r  <= 8'h00;
             tx_valid_r <= 1'b0;
@@ -172,7 +172,7 @@ module i2s_record_to_uart #(
                             state    <= S_RECORD;
                         end else if (rx_data == CMD_DUMP) begin
                             addr_cnt  <= 0;
-                            dump_high <= 1'b1;
+                            dump_byte <= 2'd2;
                             dump_init <= 1'b1;  // Prefetch first word
                             state     <= S_DUMP;
                         end
@@ -197,25 +197,29 @@ module i2s_record_to_uart #(
                         // Waiting 1 cycle for BRAM registered output to be valid
                         dump_init <= 1'b0;
                     end else if (!tx_valid_r) begin
-                        // UART TX is free — send next byte
-                        if (dump_high) begin
-                            tx_data_r  <= dump_word[15:8];  // MSB first
-                            tx_valid_r <= 1'b1;
-                            dump_high  <= 1'b0;
-                        end else begin
-                            tx_data_r  <= dump_word[7:0];   // LSB second
-                            tx_valid_r <= 1'b1;
-                            if (addr_cnt == NUM_SAMPLES - 1) begin
-                                // Last sample sent — return to IDLE
-                                addr_cnt <= 0;
-                                state    <= S_IDLE;
-                            end else begin
-                                // Advance to next sample; prefetch the word
-                                addr_cnt  <= addr_cnt + 1;
-                                dump_high <= 1'b1;
-                                dump_init <= 1'b1;
+                        // UART TX is free — send next byte (big-endian)
+                        tx_valid_r <= 1'b1;
+                        case (dump_byte)
+                            2'd2: begin
+                                tx_data_r <= dump_word[23:16];
+                                dump_byte <= 2'd1;
                             end
-                        end
+                            2'd1: begin
+                                tx_data_r <= dump_word[15:8];
+                                dump_byte <= 2'd0;
+                            end
+                            default: begin
+                                tx_data_r <= dump_word[7:0];
+                                if (addr_cnt == NUM_SAMPLES - 1) begin
+                                    addr_cnt <= 0;
+                                    state    <= S_IDLE;
+                                end else begin
+                                    addr_cnt  <= addr_cnt + 1;
+                                    dump_byte <= 2'd2;
+                                    dump_init <= 1'b1;
+                                end
+                            end
+                        endcase
                     end
                 end
 

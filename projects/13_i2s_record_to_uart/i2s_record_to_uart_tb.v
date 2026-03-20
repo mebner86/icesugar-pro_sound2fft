@@ -10,7 +10,7 @@
 //   3. Send 'R' command via UART; simultaneously drive 4 known I2S frames
 //   4. Wait for recording to complete (state returns to IDLE, blue LED on)
 //   5. Send 'D' command via UART
-//   6. Receive 8 bytes (4 samples × 2 bytes) and verify each pair
+//   6. Receive 12 bytes (4 samples × 3 bytes) and verify each triplet
 
 `timescale 1ns/1ps
 
@@ -154,19 +154,14 @@ module i2s_record_to_uart_tb;
     // =========================================================================
     // Stimulus
     // =========================================================================
-    // Known test words (24-bit I2S); expected top-16-bit output
+    // Known test words (full 24-bit I2S)
     localparam [23:0] WORD0 = 24'hABCDEF;
     localparam [23:0] WORD1 = 24'h123456;
     localparam [23:0] WORD2 = 24'hDEAD00;
-    localparam [23:0] WORD3 = 24'hBEEF00;
-
-    localparam [15:0] EXP0 = 16'hABCD;
-    localparam [15:0] EXP1 = 16'h1234;
-    localparam [15:0] EXP2 = 16'hDEAD;
-    localparam [15:0] EXP3 = 16'hBEEF;
+    localparam [23:0] WORD3 = 24'hBEEF42;
 
     reg [7:0]  rx_byte;
-    reg [15:0] rx_word;
+    reg [23:0] rx_word;
     integer    errors;
     integer    k;
 
@@ -225,7 +220,7 @@ module i2s_record_to_uart_tb;
         $display("[%0t] Back in IDLE — sending 'D'", $time);
 
         // ------------------------------------------------------------------
-        // Step 4: Send 'D' and receive 8 bytes (4 × 16-bit big-endian)
+        // Step 4: Send 'D' and receive 12 bytes (4 × 24-bit big-endian)
         // ------------------------------------------------------------------
         fork
             send_byte(8'h44);  // 'D'
@@ -233,38 +228,40 @@ module i2s_record_to_uart_tb;
             begin
                 for (k = 0; k < NUM_SAMPLES; k = k + 1) begin
                     recv_byte(rx_byte);
+                    rx_word[23:16] = rx_byte;
+                    recv_byte(rx_byte);
                     rx_word[15:8] = rx_byte;
                     recv_byte(rx_byte);
                     rx_word[7:0] = rx_byte;
 
                     case (k)
                         0: begin
-                            if (rx_word !== EXP0) begin
-                                $display("FAIL sample %0d: expected 0x%04X, got 0x%04X", k, EXP0, rx_word);
+                            if (rx_word !== WORD0) begin
+                                $display("FAIL sample %0d: expected 0x%06X, got 0x%06X", k, WORD0, rx_word);
                                 errors = errors + 1;
                             end else
-                                $display("OK   sample %0d: 0x%04X", k, rx_word);
+                                $display("OK   sample %0d: 0x%06X", k, rx_word);
                         end
                         1: begin
-                            if (rx_word !== EXP1) begin
-                                $display("FAIL sample %0d: expected 0x%04X, got 0x%04X", k, EXP1, rx_word);
+                            if (rx_word !== WORD1) begin
+                                $display("FAIL sample %0d: expected 0x%06X, got 0x%06X", k, WORD1, rx_word);
                                 errors = errors + 1;
                             end else
-                                $display("OK   sample %0d: 0x%04X", k, rx_word);
+                                $display("OK   sample %0d: 0x%06X", k, rx_word);
                         end
                         2: begin
-                            if (rx_word !== EXP2) begin
-                                $display("FAIL sample %0d: expected 0x%04X, got 0x%04X", k, EXP2, rx_word);
+                            if (rx_word !== WORD2) begin
+                                $display("FAIL sample %0d: expected 0x%06X, got 0x%06X", k, WORD2, rx_word);
                                 errors = errors + 1;
                             end else
-                                $display("OK   sample %0d: 0x%04X", k, rx_word);
+                                $display("OK   sample %0d: 0x%06X", k, rx_word);
                         end
                         3: begin
-                            if (rx_word !== EXP3) begin
-                                $display("FAIL sample %0d: expected 0x%04X, got 0x%04X", k, EXP3, rx_word);
+                            if (rx_word !== WORD3) begin
+                                $display("FAIL sample %0d: expected 0x%06X, got 0x%06X", k, WORD3, rx_word);
                                 errors = errors + 1;
                             end else
-                                $display("OK   sample %0d: 0x%04X", k, rx_word);
+                                $display("OK   sample %0d: 0x%06X", k, rx_word);
                         end
                     endcase
                 end

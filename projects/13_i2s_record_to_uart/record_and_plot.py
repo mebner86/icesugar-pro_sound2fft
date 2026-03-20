@@ -2,7 +2,6 @@
 """Record a block of audio from the FPGA and plot the waveform + spectrum."""
 
 import argparse
-import struct
 import sys
 import time
 
@@ -14,7 +13,7 @@ SAMPLE_RATE = 48_828  # Hz  (CLK_DIV=4)
 NUM_SAMPLES = 4096
 BAUD_RATE = 115_200
 RECORD_WAIT_S = 0.12  # slightly more than the ~84 ms record window
-DUMP_BYTES = NUM_SAMPLES * 2
+DUMP_BYTES = NUM_SAMPLES * 3
 
 
 def record_and_dump(port: str) -> np.ndarray:
@@ -35,8 +34,15 @@ def record_and_dump(port: str) -> np.ndarray:
         print(f"ERROR: expected {DUMP_BYTES} bytes, got {len(raw)}", file=sys.stderr)
         sys.exit(1)
 
-    # Big-endian signed 16-bit
-    samples = np.array(struct.unpack(f">{NUM_SAMPLES}h", raw), dtype=np.float32)
+    # Big-endian signed 24-bit (unpack as 3 bytes, sign-extend to int32)
+    samples = np.zeros(NUM_SAMPLES, dtype=np.int32)
+    for i in range(NUM_SAMPLES):
+        b = raw[i * 3 : i * 3 + 3]
+        val = (b[0] << 16) | (b[1] << 8) | b[2]
+        if val & 0x800000:
+            val -= 0x1000000
+        samples[i] = val
+    samples = samples.astype(np.float32)
     print(
         f"Received {NUM_SAMPLES} samples  "
         f"(min={samples.min():.0f}, max={samples.max():.0f}, "
@@ -92,18 +98,21 @@ def main() -> None:
     parser.add_argument(
         "--save",
         metavar="FILE",
-        help="Save raw 16-bit PCM to FILE (for use with sox etc.)",
+        help="Save raw 24-bit PCM to FILE (for use with sox etc.)",
     )
     args = parser.parse_args()
 
     samples = record_and_dump(args.port)
 
     if args.save:
-        raw = struct.pack(f">{NUM_SAMPLES}h", *samples.astype(np.int16))
+        raw_out = bytearray()
+        for s in samples.astype(np.int32):
+            val = int(s) & 0xFFFFFF
+            raw_out += bytes([(val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF])
         with open(args.save, "wb") as f:
-            f.write(raw)
+            f.write(raw_out)
         print(f"Raw PCM saved to {args.save}")
-        print(f"  sox -r {SAMPLE_RATE} -e signed -b 16 -c 1 {args.save} out.wav")
+        print(f"  sox -r {SAMPLE_RATE} -e signed -b 24 -c 1 {args.save} out.wav")
 
     plot(samples)
 
