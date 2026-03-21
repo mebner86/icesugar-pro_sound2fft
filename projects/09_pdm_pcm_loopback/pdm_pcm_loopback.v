@@ -2,7 +2,7 @@
 //
 // Extends project 08 (raw PDM loopback) by converting the PDM bitstream to
 // 16-bit PCM with a 3rd-order CIC filter, applying configurable gain, then
-// re-modulating back to PDM via a 1st-order sigma-delta modulator before
+// re-modulating back to PDM via a 2nd-order sigma-delta modulator before
 // forwarding to the MAX98358 PDM amplifier.
 //
 // Signal flow:
@@ -10,7 +10,7 @@
 //                   →  CIC sinc³ decimation (R=64)  →  16-bit PCM @ ~48.8 kHz
 //                   →  gain (signed shift with saturation)
 //                   →  zero-order hold (latch between PCM updates)
-//                   →  1st-order sigma-delta modulator  →  1-bit PDM @ 3.125 MHz
+//                   →  2nd-order sigma-delta modulator  →  1-bit PDM @ 3.125 MHz
 //                   →  MAX98358 PDM amp
 //
 // Gain / mute:
@@ -136,14 +136,19 @@ module pdm_pcm_loopback #(
     end
 
     // -------------------------------------------------------------------------
-    // 1st-order sigma-delta modulator: PCM → PDM
+    // 2nd-order sigma-delta modulator: PCM → PDM
     // Runs at PDM rate (pdm_valid strobe, 3.125 MHz).
+    // 2nd-order CIFB topology gives NTF = (1−z⁻¹)², providing 40 dB/decade
+    // noise shaping vs. 20 dB/decade for 1st-order — significantly less
+    // audible quantization noise.
     // After reset, pcm_held = 0, so the modulator produces ~50 % duty cycle
     // (silence) — no click or pop when the button is pressed/released.
     // -------------------------------------------------------------------------
     wire amp_dat_w;
 
-    pdm_modulator mod (
+    pdm_modulator #(
+        .ORDER (2)
+    ) mod (
         .clk       (clk_25m),
         .rst_n     (rst_n),
         .pcm_in    (pcm_held),

@@ -2,7 +2,7 @@
 
 Extends [project 08](../08_pdm_bitstream_loopback/) by converting the PDM
 bitstream to 16-bit PCM words, applying configurable gain, then re-modulating
-back to PDM via a 1st-order sigma-delta modulator before forwarding to the
+back to PDM via a 2nd-order sigma-delta modulator before forwarding to the
 MAX98358 PDM amplifier. The loopback now occurs at the PCM level, enabling
 audio DSP in between.
 
@@ -31,7 +31,7 @@ Gain: signed shift GAIN_SHIFT (~6 dB/step, ±, with saturation)
 Zero-order hold (latch per pcm_valid)
   │
   ▼
-1st-order sigma-delta modulator          [rtl/pdm_modulator.v]
+2nd-order sigma-delta modulator          [rtl/pdm_modulator.v]
   │  1-bit PDM @ 3.125 MHz
   │
   ├──── amp_clk ─────────────► MAX98358
@@ -114,20 +114,28 @@ is sign-extended to 32 bits, shifted, then saturated back to 16 bits:
 
 ### PDM Modulator
 
-`rtl/pdm_modulator.v` implements a 1st-order error-feedback sigma-delta
-modulator. It runs at the PDM rate (3.125 MHz, driven by the same
-`pdm_valid` strobe as the CIC), holding the PCM sample between updates.
+`rtl/pdm_modulator.v` with `ORDER=2` implements a 2nd-order CIFB
+(Cascade of Integrators, FeedBack) sigma-delta modulator. It runs at the
+PDM rate (3.125 MHz, driven by the same `pdm_valid` strobe as the CIC),
+holding the PCM sample between updates.
+
+The 2nd-order topology gives NTF = (1 − z⁻¹)², providing 40 dB/decade
+noise shaping — double the 1st-order's 20 dB/decade. This significantly
+reduces audible quantization hiss compared to the 1st-order modulator.
 
 **Algorithm (each PDM clock cycle):**
 
 ```
-new_acc  = accum + pcm_in        // 17-bit signed, overflow-safe
-pdm_out  = (new_acc ≥ 0) ? 1 : 0
-accum    = new_acc − (pdm_out ? +32768 : −32768)
+sum1    = acc1 + pcm_in
+sum2    = acc2 + sum1
+pdm_out = (sum2 ≥ 0) ? 1 : 0
+fb      = pdm_out ? +32768 : −32768
+acc1    = clamp(sum1 − fb)          // clamp to ±2²³
+acc2    = clamp(sum2 − fb)
 ```
 
-The accumulator is bounded to `[−32768, +32767]` (see module header for
-proof). The average duty cycle of `pdm_out` linearly tracks `pcm_in`:
+Both integrators are clamped to ±2²³ to prevent runaway at extreme inputs.
+The average duty cycle of `pdm_out` linearly tracks `pcm_in`:
 
 | `pcm_in` | PDM duty cycle |
 |----------|---------------|
