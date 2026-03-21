@@ -1,0 +1,23 @@
+# ANSI reference insertion loss data (blue squares)
+# Extracted from hearing protection measurement chart
+# Source: 3M Peltor Optime 105 (H10A) or similar over-ear muff
+freq_hz,insertion_loss_dB
+125,18
+159,20
+197,21
+251,26
+316,29
+398,32
+502,37
+629,41
+793,45
+1000,44
+1265,43
+1590,41
+1992,39
+2511,35
+3186,35
+4004,38
+5064,40
+6345,36
+8024,39
