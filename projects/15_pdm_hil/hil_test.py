@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-hil_test.py — Host-side script for the pdm_hil project (project 14).
+hil_test.py — Host-side script for the pdm_hil project (project 15).
 
 Characterises the acoustic transfer function between the MAX98358 speaker
 and the MP34DT01-M microphone on the iCESugar-Pro board.

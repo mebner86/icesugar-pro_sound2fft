@@ -1,4 +1,4 @@
-# 09 — PDM PCM Loopback
+# 10 — PDM PCM Loopback
 
 Extends [project 08](../08_pdm_bitstream_loopback/) by converting the PDM
 bitstream to 16-bit PCM words, applying configurable gain, then re-modulating
@@ -7,7 +7,7 @@ MAX98358 PDM amplifier. The loopback now occurs at the PCM level, enabling
 audio DSP in between.
 
 Compare with [project 08](../08_pdm_bitstream_loopback/), which passes the
-raw PDM bitstream through with no conversion, and [project 10](../10_pdm_to_i2s_loopback/),
+raw PDM bitstream through with no conversion, and [project 11](../11_pdm_to_i2s_loopback/),
 which converts the same PDM stream to I2S and drives a different amplifier.
 
 ## Signal Flow
@@ -146,7 +146,7 @@ The average duty cycle of `pdm_out` linearly tracks `pcm_in`:
 ## Build
 
 ```bash
-cd projects/09_pdm_pcm_loopback
+cd projects/10_pdm_pcm_loopback
 make          # synthesize, place-and-route, generate bitstream
 make sim      # run testbench with Icarus Verilog
 make waves    # open VCD in GTKWave

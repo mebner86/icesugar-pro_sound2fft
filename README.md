@@ -91,8 +91,9 @@ ssh <username>@<pi-address> "sudo icesprog <project>.bit"
 
 ## Python Environment Setup
 
-Some projects (`12_fft_uart`, `13_i2s_record_to_uart`, `14_pdm_hil`) include a Python host
-script that runs **outside** the Dev Container on your local machine.  All
+Some projects (`09_pdm_sigma_delta_modulator`, `13_fft_uart`, `14_i2s_record_to_uart`, `15_pdm_hil`) include Python
+scripts.  Project 09 has an interactive demo that runs inside the Dev Container;
+the others include host scripts that run **outside** the container.  All
 Python dependencies are listed in `requirements.txt` at the repo root.
 
 ### Miniforge / conda (Windows — recommended)
@@ -164,13 +165,14 @@ gtkwave projects/01_blinky/blinky_tb.gtkw
 | `06_live_fft` | Live FFT spectrum analyzer (I2S mic → 256-point FFT → 128-bin HDMI graph) |
 | `07_live_real_fft` | Real-valued FFT optimization (512-point real FFT via 256-point complex → 256-bin display) |
 | `08_pdm_bitstream_loopback` | Raw PDM bitstream loopback (PDM mic → PDM amp, no DSP) |
-| `09_pdm_pcm_loopback` | PDM PCM loopback — CIC decimation → signed gain/mute → sigma-delta re-modulation → PDM amp |
-| `10_pdm_to_i2s_loopback` | PDM mic-to-I2S amp loopback (PDM → I2S conversion via CIC filter) |
-| `11_uart_loopback` | UART loopback via iCELink USB-CDC virtual COM port (type in terminal, FPGA echoes back) |
-| `12_fft_uart` | FFT spectrum analyzer with UART output — streams 256-bin magnitude to host Python display script |
-| `13_i2s_record_to_uart` | Record 4096 I2S samples to BRAM on command, dump as raw 16-bit PCM over UART, plot with Python |
-| `14_pdm_hil` | Hardware-in-the-loop transfer function characterizer — upload test signal, replay through speaker while recording mic, dump result; compute H(f) on host |
-| `15_pdm_replay` | Self-contained sine tone generator — 64-sample ROM → sigma-delta → PDM amp (~763 Hz) |
+| `09_pdm_sigma_delta_modulator` | Sigma-delta modulator demo — 64-sample sine ROM → 2nd-order sigma-delta → PDM amp (~763 Hz) |
+| `10_pdm_pcm_loopback` | PDM PCM loopback — CIC decimation → signed gain/mute → sigma-delta re-modulation → PDM amp |
+| `11_pdm_to_i2s_loopback` | PDM mic-to-I2S amp loopback (PDM → I2S conversion via CIC filter) |
+| `12_uart_loopback` | UART loopback via iCELink USB-CDC virtual COM port (type in terminal, FPGA echoes back) |
+| `13_fft_uart` | FFT spectrum analyzer with UART output — streams 256-bin magnitude to host Python display script |
+| `14_i2s_record_to_uart` | Record 4096 I2S samples to BRAM on command, dump as raw 16-bit PCM over UART, plot with Python |
+| `15_pdm_hil` | Hardware-in-the-loop transfer function characterizer — upload test signal, replay through speaker while recording mic, dump result; compute H(f) on host |
+| `16_pdm_replay` | Self-contained sine tone generator — 64-sample ROM → sigma-delta → PDM amp (~763 Hz) |
 
 ## Project Structure
 
@@ -193,7 +195,7 @@ icesugar-pro_sound2fft/
 │   ├── i2s_tx.v          # I2S parallel-to-serial transmitter
 │   ├── pdm_cic.v         # PDM CIC decimation filter (sinc³)
 │   ├── pdm_clkgen.v      # PDM clock generator (parameterised divider + rising-edge strobe)
-│   ├── pdm_modulator.v   # 1st-order sigma-delta PDM modulator (PCM → PDM)
+│   ├── pdm_modulator.v   # Sigma-delta PDM modulator (PCM → PDM, 1st/2nd order)
 │   ├── pll.v             # PLL for pixel/shift clocks
 │   ├── tmds_encoder.v    # DVI/HDMI 8b/10b TMDS encoder
 │   ├── tmds_serializer.v # 10:1 DDR TMDS serializer
@@ -217,16 +219,14 @@ icesugar-pro_sound2fft/
 │   ├── 06_live_fft/      # Live FFT spectrum analyzer
 │   ├── 07_live_real_fft/ # Real-valued FFT (256 bins)
 │   ├── 08_pdm_bitstream_loopback/ # Raw PDM bitstream loopback
-│   ├── 09_pdm_pcm_loopback/ # PDM PCM loopback with signed gain and mute
-│   ├── 10_pdm_to_i2s_loopback/ # PDM mic-to-I2S amp loopback
-│   ├── 11_uart_loopback/ # UART loopback via iCELink USB-CDC
-│   ├── 12_fft_uart/      # FFT spectrum over UART + Python display
-│   │   └── display_fft.py # Host-side spectrum viewer (run outside container)
-│   ├── 13_i2s_record_to_uart/ # Record I2S audio to BRAM, dump over UART
-│   │   └── record_and_plot.py  # Host-side record, dump, and plot script
-│   ├── 14_pdm_hil/       # HIL transfer function characterizer
-│   │   └── hil_test.py        # Host-side HIL measurement script
-│   └── 15_pdm_replay/    # Self-contained sine tone generator
+│   ├── 09_pdm_sigma_delta_modulator/ # Sigma-delta modulator demo
+│   ├── 10_pdm_pcm_loopback/ # PDM PCM loopback with signed gain and mute
+│   ├── 11_pdm_to_i2s_loopback/ # PDM mic-to-I2S amp loopback
+│   ├── 12_uart_loopback/ # UART loopback via iCELink USB-CDC
+│   ├── 13_fft_uart/      # FFT spectrum over UART + Python display
+│   ├── 14_i2s_record_to_uart/ # Record I2S audio to BRAM, dump over UART
+│   ├── 15_pdm_hil/       # HIL transfer function characterizer
+│   └── 16_pdm_replay/    # Self-contained sine tone generator
 ├── requirements.txt      # Python dependencies for host scripts
 └── README.md
 ```

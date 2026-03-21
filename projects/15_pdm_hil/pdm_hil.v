@@ -1,8 +1,8 @@
 // pdm_hil.v — PDM Hardware-in-the-Loop Transfer Function Characterizer
 // iCESugar-Pro (ECP5-25F)
 //
-// Builds on project 09 (PDM mic → CIC → PCM → sigma-delta → PDM amp) and
-// project 13 (UART command + BRAM recording) to enable closed-loop acoustic
+// Builds on project 10 (PDM mic → CIC → PCM → sigma-delta → PDM amp) and
+// project 14 (UART command + BRAM recording) to enable closed-loop acoustic
 // transfer function measurement:
 //
 //   1. Upload a test signal (chirp, impulse, noise) via UART into replay_ram.

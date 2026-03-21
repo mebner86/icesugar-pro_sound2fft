@@ -1,7 +1,7 @@
 # iCESugar-Pro pin constraints for pdm_hil
 # ECP5-25F in CABGA256 package
 #
-# Combines project 09 (PDM mic + amp) and project 13 (iCELink UART) pin sets.
+# Combines project 10 (PDM mic + amp) and project 14 (iCELink UART) pin sets.
 
 # Clock - 25 MHz oscillator
 LOCATE COMP "clk_25m" SITE "P6";

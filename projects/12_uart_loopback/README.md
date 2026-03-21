@@ -1,4 +1,4 @@
-# 11_uart_loopback
+# 12_uart_loopback
 
 UART loopback demo for the iCESugar-Pro board.
 
@@ -50,15 +50,15 @@ Both `uart_rx` and `uart_tx` are parameterised with `CLK_FREQ` and `BAUD_RATE` s
 From the project root (inside the Dev Container terminal):
 
 ```bash
-make build 11   # Build bitstream
-make sim 11     # Run simulation
-make lint 11    # Lint check
+make build 12   # Build bitstream
+make sim 12     # Run simulation
+make lint 12    # Lint check
 ```
 
 Or from the project directory:
 
 ```bash
-cd projects/11_uart_loopback
+cd projects/12_uart_loopback
 make        # Synthesize, place & route, generate bitstream
 make sim    # Run simulation (Icarus Verilog)
 make lint   # Run Verilator linting
@@ -70,7 +70,7 @@ make clean  # Remove build artifacts
 After running simulation, open the waveform viewer:
 
 ```bash
-gtkwave projects/11_uart_loopback/uart_loopback_tb.gtkw
+gtkwave projects/12_uart_loopback/uart_loopback_tb.gtkw
 ```
 
 The `.gtkw` save file preloads the UART lines, LED outputs, and RX/TX module internal states.
@@ -81,7 +81,7 @@ Copy the built bitstream to your host and flash it:
 
 ```bash
 # Copy from container to host, then:
-icesprog projects/11_uart_loopback/build/uart_loopback.bit
+icesprog projects/12_uart_loopback/build/uart_loopback.bit
 # or drag the .bit file to the USB drive that appears when the board is plugged in
 ```
 

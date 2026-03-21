@@ -42,6 +42,7 @@ repos:
             .*/uart_loopback\.v$|       # Instantiates uart_rx, uart_tx
             .*/i2s_record_to_uart\.v$|  # Instantiates i2s_clkgen, i2s_rx, uart_rx, uart_tx
             .*/pdm_hil\.v$|             # Instantiates pdm_cic, pdm_modulator, uart_rx, uart_tx
+            .*/pdm_sigma_delta_modulator\.v$| # Instantiates pdm_clkgen, pdm_modulator
             .*/pdm_replay\.v$|          # Instantiates pdm_modulator
             tests/.*_top\.v$            # Test wrappers (instantiate rtl/ modules)
           )$

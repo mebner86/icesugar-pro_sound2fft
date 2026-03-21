@@ -1,11 +1,13 @@
-# 15 — PDM Replay (Sine Tone Generator)
+# 09 — PDM Sigma-Delta Modulator
 
-Continuously replays a 64-sample 16-bit signed sine wave stored in on-chip ROM
-through the MAX98358 PDM amplifier, producing a steady **~763 Hz** tone.
-No microphone and no UART are involved — the design is entirely self-contained.
+Demonstrates the shared `rtl/pdm_modulator.v` sigma-delta modulator in isolation
+by feeding a 64-sample sine ROM through the modulator to the MAX98358 PDM
+amplifier, producing a steady **~763 Hz** tone. No microphone and no CIC filter
+are involved — the design exercises only the PDM clock generator and the
+sigma-delta modulator.
 
-Useful as a signal source for acoustic experiments (e.g. feeding a spectrum
-analyser to verify the PDM→speaker chain is working correctly).
+The `ORDER` parameter selects 1st-order (20 dB/decade noise shaping) or
+2nd-order (40 dB/decade). Default is 2nd-order.
 
 ## Signal Flow
 
@@ -13,7 +15,7 @@ analyser to verify the PDM→speaker chain is working correctly).
 ROM [64 × 16-bit sine]
         │  pcm_valid (~48.828 kHz)
         ▼
-  zero-order hold (pcm_held) ──► 1st-order sigma-delta ──► amp_clk/dat ──► MAX98358
+  zero-order hold (pcm_held) ──► sigma-delta modulator ──► amp_clk/dat ──► MAX98358
 ```
 
 ## Tone Parameters
@@ -30,15 +32,7 @@ ROM [64 × 16-bit sine]
 
 The amplitude is reduced by `>>> 5` (arithmetic right-shift by 5, i.e. ÷32) in the
 zero-order hold latch before the sigma-delta modulator.  Adjust the shift count to
-change volume in ~6 dB steps:
-
-| Shift | Divisor | Approx. level |
-|-------|---------|---------------|
-| `>>> 0` | 1 | 0 dB (full scale) |
-| `>>> 1` | 2 | −6 dB |
-| `>>> 3` | 8 | −18 dB |
-| `>>> 5` | 32 | −30 dB ← current |
-| `>>> 6` | 64 | −36 dB |
+change volume in ~6 dB steps.
 
 ## LED Indicators (active-low)
 
@@ -63,34 +57,10 @@ Only the amplifier is needed; the microphone is not used.
 | `amp_clk` | J4 | output |
 | `amp_dat` | J3 | output |
 
-## Architecture
-
-### Sine ROM
-
-A 64 × 16-bit read-only memory initialised with `initial` assignments:
-
-```
-v[k] = round(32767 × sin(2π × k / 64))   k = 0..63
-```
-
-With no write ports, Yosys infers this as a LUT-based ROM (1 kbit).
-
-### PCM-rate Divider
-
-A 6-bit counter (`dec_cnt`) increments on every `pdm_valid` strobe and fires
-`pcm_valid` every 64 counts, dividing the 3.125 MHz PDM clock down to the
-~48.828 kHz sample rate at which the sine address advances.
-
-### Sigma-Delta Modulator
-
-`rtl/pdm_modulator.v` — 1st-order error-feedback, runs at the 3.125 MHz PDM
-rate.  The zero-order hold (`pcm_held`) supplies a constant input between
-`pcm_valid` updates.
-
 ## Build
 
 ```bash
-cd projects/15_pdm_replay
+cd projects/09_pdm_sigma_delta_modulator
 make          # synthesise, place & route, generate bitstream
 make sim      # run testbench with Icarus Verilog
 make waves    # open GTKWave (requires make sim first)
@@ -101,12 +71,30 @@ make clean    # remove build artefacts
 
 Toolchain: Yosys · nextpnr-ecp5 · ecppack · icesprog · iverilog · verilator
 
+## Interactive Python Demo
+
+`sigma_delta_demo.py` is a cell-based Python script (use `# %%` cells in
+VS Code with the Jupyter extension) that walks through sigma-delta modulation
+step by step:
+
+1. Generate a 16-bit sine wave test signal
+2. Run 1st-order and 2nd-order sigma-delta modulators
+3. Visualise PDM bitstream density
+4. Recover the original signal with a moving-average (CIC-like) filter
+5. Compare quantisation noise spectra (20 vs 40 dB/decade shaping)
+6. Plot SNR vs oversampling ratio
+
+The algorithms match the Verilog implementation in `rtl/pdm_modulator.v`
+exactly, making it easy to verify RTL behaviour against a Python reference.
+
+Requires: `pip install numpy matplotlib scipy` (see `requirements.txt`).
+
 ## Simulation
 
-The testbench (`pdm_replay_tb.v`) runs for 2 complete sine periods
+The testbench (`pdm_sigma_delta_modulator_tb.v`) runs for 2 complete sine periods
 (2 × 64 × 512 = 65,536 system clocks after reset) and checks:
 
-- Green LED on, red LED off during replay.
+- Green LED on, red LED off during operation.
 - `amp_dat` has many transitions (sigma-delta active).
 - `pcm_held` reaches the positive sine peak (≥ +870 after ÷32).
 - `pcm_held` reaches the negative sine peak (≤ −870 after ÷32).
@@ -115,7 +103,7 @@ The testbench (`pdm_replay_tb.v`) runs for 2 complete sine periods
 Expected output:
 
 ```
-OK   [leds]: green=on red=off during replay
+OK   [leds]: green=on red=off during operation
 OK   [amp_dat]: XXXX transitions over 2 sine periods
 OK   [positive peak]: pcm_held reached sine maximum
 OK   [negative peak]: pcm_held reached sine minimum

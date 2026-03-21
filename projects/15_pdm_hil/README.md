@@ -1,7 +1,7 @@
-# 14 — PDM HIL (Hardware-in-the-Loop Transfer Function Characterizer)
+# 15 — PDM HIL (Hardware-in-the-Loop Transfer Function Characterizer)
 
-Combines [project 09](../09_pdm_pcm_loopback/) (PDM mic→CIC→sigma-delta→PDM amp) and
-[project 13](../13_i2s_record_to_uart/) (UART command + BRAM recording) to implement a
+Combines [project 10](../10_pdm_pcm_loopback/) (PDM mic→CIC→sigma-delta→PDM amp) and
+[project 14](../14_i2s_record_to_uart/) (UART command + BRAM recording) to implement a
 closed-loop acoustic HIL test system.  Upload a test signal, replay it through the
 MAX98358 speaker while recording the MP34DT01-M microphone, then download the recording
 to compute the speaker-to-microphone transfer function H(f) on the host.
@@ -90,7 +90,7 @@ RECORD ────────────────────────�
 
 ## Hardware Wiring
 
-Same as project 09 (PDM mic + amp) plus the iCELink USB-CDC UART from project 13.
+Same as project 10 (PDM mic + amp) plus the iCELink USB-CDC UART from project 14.
 
 | Signal | FPGA Site | Connector | Direction |
 |--------|-----------|-----------|-----------|
@@ -119,7 +119,7 @@ Both are inferred as EBR via the standard synchronous-write / synchronous-read (
 
 ### CIC Filter and Modulator
 
-Identical to project 09:
+Identical to project 10:
 - `rtl/pdm_cic.v` — CIC_ORDER=3, DEC_RATIO=64, OUT_BITS=16
 - `rtl/pdm_modulator.v` — 1st-order sigma-delta, runs at 3.125 MHz PDM rate
 
@@ -129,7 +129,7 @@ During PLAY_RECORD the zero-order hold (`pcm_held`) is loaded from `replay_ram` 
 ## Build
 
 ```bash
-cd projects/14_pdm_hil
+cd projects/15_pdm_hil
 make          # synthesise, place & route, generate bitstream
 make sim      # run testbench with Icarus Verilog
 make waves    # open GTKWave (requires make sim first)
@@ -142,7 +142,7 @@ Toolchain: Yosys · nextpnr-ecp5 · ecppack · icesprog · iverilog · verilator
 
 ## Usage
 
-Connect the MAX98358 amplifier module to Port4 (same wiring as project 09) and attach the
+Connect the MAX98358 amplifier module to Port4 (same wiring as project 10) and attach the
 iCELink USB-CDC port to the host.  Open a terminal at **115200 baud, 8N1**.
 
 ### Full HIL measurement with `hil_test.py`

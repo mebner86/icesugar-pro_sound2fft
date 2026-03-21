@@ -1,8 +1,8 @@
-# 12_fft_uart
+# 13_fft_uart
 
 Real-time FFT spectrum analyzer that streams frequency data to a host PC over
 UART instead of displaying it on an HDMI screen.  Builds on the FFT engine
-from project 07 and the UART infrastructure from project 11.
+from project 07 and the UART infrastructure from project 12.
 
 ## Description
 
@@ -115,9 +115,9 @@ Frequency resolution: Fs / N = 48828 / 512 ≈ **95.4 Hz/bin**
 From the repo root (inside Dev Container):
 
 ```bash
-make build 12   # synthesise, place & route, generate bitstream
-make sim   12   # run simulation (fast — serialiser only, no FFT/I2S)
-make lint  12   # Verilator lint check
+make build 13   # synthesise, place & route, generate bitstream
+make sim   13   # run simulation (fast — serialiser only, no FFT/I2S)
+make lint  13   # Verilator lint check
 ```
 
 Or from the project directory:
@@ -146,7 +146,7 @@ PASS: all 257 bytes correct
 ## Program
 
 ```bash
-icesprog projects/12_fft_uart/build/fft_uart.bit
+icesprog projects/13_fft_uart/build/fft_uart.bit
 # or drag the .bit file to the USB drive that appears when the board is plugged in
 ```
 
@@ -175,18 +175,18 @@ pip install -r requirements.txt          # from repo root
 
 ```bash
 # Windows (find COMx in Device Manager)
-python projects/12_fft_uart/display_fft.py COM5
+python projects/13_fft_uart/display_fft.py COM5
 
 # Linux
-python projects/12_fft_uart/display_fft.py /dev/ttyACM0
+python projects/13_fft_uart/display_fft.py /dev/ttyACM0
 
 # macOS
-python projects/12_fft_uart/display_fft.py /dev/tty.usbmodem...
+python projects/13_fft_uart/display_fft.py /dev/tty.usbmodem...
 ```
 
 Optional `--baud` argument (default 115200):
 ```bash
-python projects/12_fft_uart/display_fft.py COM5 --baud 115200
+python projects/13_fft_uart/display_fft.py COM5 --baud 115200
 ```
 
 ### Display

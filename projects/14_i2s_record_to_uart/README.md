@@ -1,8 +1,8 @@
-# 13_i2s_record_to_uart
+# 14_i2s_record_to_uart
 
 Record a fixed block of I2S microphone audio to BRAM on command, then stream
 the samples back over UART.  Combines the I2S receiver from project 04 with
-the UART infrastructure from project 11.
+the UART infrastructure from project 12.
 
 ## Description
 
@@ -87,9 +87,9 @@ uart_rx (A9) ──► state machine ──► uart_tx (B9) ──► iCELink US
 From the repo root (inside Dev Container):
 
 ```bash
-make build 13   # synthesise, place & route, generate bitstream
-make sim   13   # run simulation
-make lint  13   # Verilator lint check
+make build 14   # synthesise, place & route, generate bitstream
+make sim   14   # run simulation
+make lint  14   # Verilator lint check
 ```
 
 Or from the project directory:
@@ -124,7 +124,7 @@ PASS: all 4 samples correct
 ## Program
 
 ```bash
-icesprog projects/13_i2s_record_to_uart/build/i2s_record_to_uart.bit
+icesprog projects/14_i2s_record_to_uart/build/i2s_record_to_uart.bit
 # or drag the .bit file to the USB drive that appears when the board is plugged in
 ```
 
