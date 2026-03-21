@@ -70,6 +70,23 @@ def gen_impulse(n=NUM_SAMPLES, amplitude=0.9):
     return sig
 
 
+def gen_sin(n=NUM_SAMPLES, fs=SAMPLE_RATE, freq=2000, amplitude=0.9):
+    """Continuous 2 kHz sine wave."""
+    t = np.arange(n) / fs
+    return amplitude * np.sin(2 * np.pi * freq * t)
+
+
+def gen_sin_delayed(
+    n=NUM_SAMPLES, fs=SAMPLE_RATE, freq=2000, onset_ms=20, amplitude=0.9
+):
+    """Silence followed by a 2 kHz sine starting at onset_ms."""
+    onset_sample = int(onset_ms / 1000.0 * fs)
+    sig = np.zeros(n)
+    t = np.arange(n - onset_sample) / fs
+    sig[onset_sample:] = amplitude * np.sin(2 * np.pi * freq * t)
+    return sig
+
+
 def gen_noise(n=NUM_SAMPLES, amplitude=0.5):
     """Band-limited white noise (DC-blocked)."""
     rng = np.random.default_rng(seed=42)
@@ -212,13 +229,27 @@ def compute_transfer_function(played_i16, recorded_i16, regularisation=1e-6):
 
 def plot_results(played_i16, recorded_i16, freqs, H_mag_db, H_phase_deg, h_t):
     import matplotlib.pyplot as plt
+    import matplotlib.ticker as ticker
+
+    freq_ticks = [100, 1000, 10000]
+    freq_labels = ["100", "1k", "10k"]
+
+    def set_freq_ticks(ax):
+        ax.set_xticks(freq_ticks)
+        ax.set_xticklabels(freq_labels)
+        ax.xaxis.set_minor_formatter(ticker.NullFormatter())
 
     played = int16_to_float(played_i16)
     recorded = int16_to_float(recorded_i16)
     t = np.arange(NUM_SAMPLES) / SAMPLE_RATE * 1000  # ms
     t_ir = np.arange(len(h_t)) / SAMPLE_RATE * 1000  # ms
 
-    fig, axes = plt.subplots(3, 2, figsize=(14, 10))
+    # Compute FFT magnitudes in dB for played and recorded
+    fft_freqs = np.fft.rfftfreq(len(played), d=1.0 / SAMPLE_RATE)
+    played_mag_db = 20 * np.log10(np.abs(np.fft.rfft(played)) + 1e-12)
+    recorded_mag_db = 20 * np.log10(np.abs(np.fft.rfft(recorded)) + 1e-12)
+
+    fig, axes = plt.subplots(5, 2, figsize=(14, 16))
     fig.suptitle("PDM HIL — Acoustic Transfer Function Measurement", fontsize=13)
 
     # Time-domain signals
@@ -234,36 +265,85 @@ def plot_results(played_i16, recorded_i16, freqs, H_mag_db, H_phase_deg, h_t):
     )
     axes[0, 1].grid(True, alpha=0.4)
 
-    # Transfer function — magnitude
-    axes[1, 0].plot(freqs / 1000, H_mag_db, lw=0.8, color="tab:green")
+    # FFT of played and recorded (combined)
+    axes[1, 0].plot(fft_freqs, played_mag_db, lw=0.8, label="Played")
+    axes[1, 0].plot(
+        fft_freqs, recorded_mag_db, lw=0.8, color="tab:orange", label="Recorded"
+    )
     axes[1, 0].set(
-        title="|H(f)| — Magnitude response", xlabel="Frequency (kHz)", ylabel="dB"
+        title="FFT — Played vs Recorded", xlabel="Frequency (Hz)", ylabel="dB"
     )
-    axes[1, 0].set_xlim([0, SAMPLE_RATE / 2000])
+    axes[1, 0].set_xscale("log")
+    axes[1, 0].set_xlim([100, SAMPLE_RATE / 2])
+    axes[1, 0].legend()
     axes[1, 0].grid(True, alpha=0.4)
+    set_freq_ticks(axes[1, 0])
 
-    # Transfer function — phase
-    axes[1, 1].plot(freqs / 1000, H_phase_deg, lw=0.8, color="tab:red")
+    # Transfer function — magnitude
+    axes[1, 1].plot(freqs, H_mag_db, lw=0.8, color="tab:green")
     axes[1, 1].set(
-        title="∠H(f) — Phase response", xlabel="Frequency (kHz)", ylabel="Degrees"
+        title="|H(f)| — Magnitude response", xlabel="Frequency (Hz)", ylabel="dB"
     )
-    axes[1, 1].set_xlim([0, SAMPLE_RATE / 2000])
+    axes[1, 1].set_xscale("log")
+    axes[1, 1].set_xlim([100, SAMPLE_RATE / 2])
     axes[1, 1].grid(True, alpha=0.4)
+    set_freq_ticks(axes[1, 1])
 
-    # Impulse response
-    axes[2, 0].plot(t_ir, h_t, lw=0.8, color="tab:purple")
+    # Phase response — wrapped
+    axes[2, 0].plot(freqs, H_phase_deg, lw=0.8, color="tab:red")
     axes[2, 0].set(
+        title="∠H(f) — Phase (wrapped)", xlabel="Frequency (Hz)", ylabel="Degrees"
+    )
+    axes[2, 0].set_xscale("log")
+    axes[2, 0].set_xlim([100, SAMPLE_RATE / 2])
+    axes[2, 0].grid(True, alpha=0.4)
+    set_freq_ticks(axes[2, 0])
+
+    # Phase response — unwrapped
+    phase_unwrapped = np.rad2deg(np.unwrap(np.deg2rad(H_phase_deg)))
+    axes[2, 1].plot(freqs, phase_unwrapped, lw=0.8, color="tab:red")
+    axes[2, 1].set(
+        title="∠H(f) — Phase (unwrapped)", xlabel="Frequency (Hz)", ylabel="Degrees"
+    )
+    axes[2, 1].set_xscale("log")
+    axes[2, 1].set_xlim([100, SAMPLE_RATE / 2])
+    axes[2, 1].grid(True, alpha=0.4)
+    set_freq_ticks(axes[2, 1])
+
+    # Impulse response with propagation delay
+    SPEED_OF_SOUND = 343.0  # m/s
+    peak_idx = np.argmax(np.abs(h_t))
+    delay_ms = t_ir[peak_idx]
+    distance_cm = delay_ms / 1000.0 * SPEED_OF_SOUND * 100.0
+
+    axes[3, 0].plot(t_ir, h_t, lw=0.8, color="tab:purple")
+    axes[3, 0].axvline(delay_ms, color="gray", ls="--", lw=0.8)
+    axes[3, 0].text(
+        0.98,
+        0.95,
+        f"delay = {delay_ms:.2f} ms\ndist ≈ {distance_cm:.1f} cm",
+        transform=axes[3, 0].transAxes,
+        ha="right",
+        va="top",
+        fontsize=9,
+        bbox=dict(facecolor="white", alpha=0.8, edgecolor="gray"),
+    )
+    axes[3, 0].set(
         title="h(t) — Impulse response (IFFT of H)",
         xlabel="Time (ms)",
         ylabel="Amplitude",
     )
-    axes[2, 0].grid(True, alpha=0.4)
+    axes[3, 0].grid(True, alpha=0.4)
 
     # Spectrogram of recorded signal
-    axes[2, 1].specgram(recorded, Fs=SAMPLE_RATE, cmap="inferno")
-    axes[2, 1].set(
+    axes[3, 1].specgram(recorded, Fs=SAMPLE_RATE, cmap="inferno")
+    axes[3, 1].set(
         title="Recorded signal spectrogram", xlabel="Time (s)", ylabel="Frequency (Hz)"
     )
+
+    # Hide unused row 4
+    axes[4, 0].axis("off")
+    axes[4, 1].axis("off")
 
     plt.tight_layout()
     plt.show()
@@ -284,7 +364,7 @@ def main():
     )
     parser.add_argument(
         "--signal",
-        choices=["chirp", "impulse", "noise"],
+        choices=["chirp", "impulse", "noise", "sin", "sin-delayed"],
         default="chirp",
         help="Test signal type (default: chirp)",
     )
@@ -296,16 +376,27 @@ def main():
         action="store_true",
         help="Record background noise without playback",
     )
+    parser.add_argument(
+        "--amplitude",
+        type=float,
+        default=0.9,
+        help="Peak amplitude of the played signal, 0.0–1.0 (default 0.9)",
+    )
     parser.add_argument("--no-plot", action="store_true", help="Skip matplotlib plot")
     args = parser.parse_args()
 
     # --- Generate test signal ---
+    amp = args.amplitude
     if args.signal == "chirp":
-        played_f = gen_chirp()
+        played_f = gen_chirp(amplitude=amp)
     elif args.signal == "impulse":
-        played_f = gen_impulse()
+        played_f = gen_impulse(amplitude=amp)
+    elif args.signal == "sin":
+        played_f = gen_sin(amplitude=amp)
+    elif args.signal == "sin-delayed":
+        played_f = gen_sin_delayed(amplitude=amp)
     else:
-        played_f = gen_noise()
+        played_f = gen_noise(amplitude=amp)
 
     played_i16 = float_to_int16(played_f)
 
