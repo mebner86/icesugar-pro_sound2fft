@@ -418,7 +418,12 @@ def main():
         help="Test signal type (default: chirp)",
     )
     parser.add_argument(
-        "--save", action="store_true", help="Save PCM and H(f) CSV files"
+        "--save",
+        type=str,
+        metavar="FILE",
+        nargs="?",
+        const="signals.csv",
+        help="Save signals to CSV file (default: signals.csv)",
     )
     parser.add_argument(
         "--record-only",
@@ -494,21 +499,19 @@ def main():
 
             # --- Save (optional) ---
             if args.save:
-                np.array(played_i16).astype(">i2").tofile("played.pcm")
-                np.array(mic1_i16).astype(">i2").tofile("mic1.pcm")
-                np.array(mic2_i16).astype(">i2").tofile("mic2.pcm")
-                csv_data = np.column_stack(
-                    [freqs, H1_mag_db, H1_phase_deg, H2_mag_db, H2_phase_deg]
-                )
+                t = np.arange(NUM_SAMPLES) / SAMPLE_RATE
+                played = int16_to_float(played_i16)
+                mic1 = int16_to_float(mic1_i16)
+                mic2 = int16_to_float(mic2_i16)
+                signals_data = np.column_stack([t, played, mic1, mic2])
                 np.savetxt(
-                    "transfer_function.csv",
-                    csv_data,
+                    args.save,
+                    signals_data,
                     delimiter=",",
-                    header="freq_hz,h1_mag_db,h1_phase_deg,h2_mag_db,h2_phase_deg",
+                    header="time_s,played,mic1_outside,mic2_inside",
                     comments="",
                 )
-                print("Saved: played.pcm, mic1.pcm, mic2.pcm, transfer_function.csv")
-                print("  Convert: sox -r 48828 -e signed -b 16 -c 1 mic1.pcm mic1.wav")
+                print(f"Saved: {args.save}")
 
             # --- Plot ---
             if not args.no_plot:
