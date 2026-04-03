@@ -2,15 +2,17 @@
 package csvin
 
 import (
+	"bufio"
 	"encoding/csv"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
-// ReadPlayed opens a CSV file, finds the column named "played", and returns
-// its values as a []float64 slice in row order.  The file must have a header
-// row; all other columns are ignored.
+// ReadPlayed opens a CSV file, prints any leading # comment lines, finds the
+// column named "speaker", and returns its values as a []float64 slice in row
+// order.  The file must have a header row; all other columns are ignored.
 func ReadPlayed(path string) ([]float64, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -18,7 +20,22 @@ func ReadPlayed(path string) ([]float64, error) {
 	}
 	defer f.Close()
 
-	r := csv.NewReader(f)
+	// Split into comment lines and data lines.
+	var dataLines []string
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "#") {
+			fmt.Println(line)
+		} else {
+			dataLines = append(dataLines, line)
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("reading %s: %w", path, err)
+	}
+
+	r := csv.NewReader(strings.NewReader(strings.Join(dataLines, "\n")))
 	r.TrimLeadingSpace = true
 
 	header, err := r.Read()

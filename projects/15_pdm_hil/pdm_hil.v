@@ -192,7 +192,7 @@ module pdm_hil #(
     wire [15:0]        rx_count_full = {count_hi_r, rx_data};
     /* verilator lint_off WIDTHTRUNC */
     wire [ADDR_BITS:0] rx_count_clamped =
-        (rx_count_full == 16'h0000 || rx_count_full > NUM_SAMPLES)
+        (rx_count_full == 16'h0000 || rx_count_full > NUM_SAMPLES[15:0])
         ? NUM_SAMPLES[ADDR_BITS:0]
         : rx_count_full[ADDR_BITS:0];
     /* verilator lint_on WIDTHTRUNC */
