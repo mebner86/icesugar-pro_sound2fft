@@ -42,6 +42,7 @@ func cmdRun(args []string) {
 	input := fs.String("input", "", "Input CSV file with 'played' column (required unless -record-only)")
 	mics := fs.Int("mics", 1, "Number of microphones: 1 or 2")
 	recordSamples := fs.Int("record-samples", 0, "Override record/dump sample count (default: same as upload count)")
+	fpgaSamples := fs.Int("fpga-samples", 16384, "FPGA buffer size; upload is clamped to this limit")
 	save := fs.String("save", "", "Save output signals to CSV file")
 	recordOnly := fs.Bool("record-only", false, "Record without playback (-input not needed)")
 	fs.Parse(args)
@@ -61,7 +62,7 @@ func cmdRun(args []string) {
 		os.Exit(1)
 	}
 
-	if err := runWorkflow(*port, *baud, *input, *mics, *recordSamples, *save, *recordOnly); err != nil {
+	if err := runWorkflow(*port, *baud, *input, *mics, *recordSamples, *fpgaSamples, *save, *recordOnly); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}

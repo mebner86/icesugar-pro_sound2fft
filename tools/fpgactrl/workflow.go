@@ -10,7 +10,7 @@ import (
 	"fpgactrl/internal/uart"
 )
 
-func runWorkflow(port string, baud int, inputCSV string, mics int, recordSamplesOverride int, savePath string, recordOnly bool) error {
+func runWorkflow(port string, baud int, inputCSV string, mics int, recordSamplesOverride int, fpgaMaxSamples int, savePath string, recordOnly bool) error {
 	var playedI16 []int16
 	uploadN := 0
 
@@ -23,6 +23,14 @@ func runWorkflow(port string, baud int, inputCSV string, mics int, recordSamples
 			return err
 		}
 		playedI16 = siggen.FloatToInt16(playedF)
+		// Clamp upload to the FPGA buffer size.  If the host sends more bytes
+		// than the FPGA expects after its own clamping, the excess bytes corrupt
+		// the UART state machine and cause the next command to hang.
+		if len(playedI16) > fpgaMaxSamples {
+			fmt.Printf("warning: input has %d samples, clamping upload to FPGA buffer size %d\n",
+				len(playedI16), fpgaMaxSamples)
+			playedI16 = playedI16[:fpgaMaxSamples]
+		}
 		uploadN = len(playedI16)
 	}
 
@@ -32,6 +40,12 @@ func runWorkflow(port string, baud int, inputCSV string, mics int, recordSamples
 	}
 	if recordN == 0 {
 		recordN = siggen.NumSamples // fallback for record-only without override
+	}
+	// recordN can't exceed what was uploaded — the FPGA only has uploadN
+	// samples in its replay buffer.
+	if !recordOnly && recordN > uploadN {
+		fmt.Printf("warning: -record-samples %d exceeds upload count %d, clamping\n", recordN, uploadN)
+		recordN = uploadN
 	}
 
 	fmt.Printf("Opening %s at %d baud...\n", port, baud)
@@ -106,7 +120,9 @@ func runWorkflow(port string, baud int, inputCSV string, mics int, recordSamples
 				columns = [][]float64{mic1F}
 			}
 		} else {
-			playedF := siggen.Int16ToFloat(playedI16)
+			// Truncate to recordN: only the first recordN played samples have a
+			// corresponding recorded response.
+			playedF := siggen.Int16ToFloat(playedI16[:recordN])
 			if mics == 2 {
 				headers = []string{"speaker", "mic1", "mic2"}
 				columns = [][]float64{playedF, mic1F, siggen.Int16ToFloat(mic2I16)}

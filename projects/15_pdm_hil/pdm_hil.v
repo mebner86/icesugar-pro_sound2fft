@@ -39,7 +39,7 @@
 module pdm_hil #(
     parameter integer CLK_FREQ    = 25_000_000,  // System clock frequency in Hz
     parameter integer BAUD_RATE   = 115_200,      // UART baud rate
-    parameter integer NUM_SAMPLES = 4096          // Replay and record buffer depth
+    parameter integer NUM_SAMPLES = 16384         // Replay and record buffer depth
 ) (
     input  wire clk_25m,
     input  wire rst_n,

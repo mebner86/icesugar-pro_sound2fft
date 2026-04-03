@@ -37,11 +37,11 @@ MP34DT01-M mic 2 ──► sync ──► CIC sinc³ ──► pcm2_raw ──�
 
 | Byte | Command | Action | FPGA Response |
 |------|---------|--------|---------------|
-| `'U'` (0x55) | CMD_UPLOAD | Receive 4096×2 bytes (big-endian 16-bit) → `replay_ram` | Sends `'K'` (0x4B) ACK |
+| `'U'` (0x55) | CMD_UPLOAD | Receive 16384×2 bytes (big-endian 16-bit) → `replay_ram` | Sends `'K'` (0x4B) ACK |
 | `'P'` (0x50) | CMD_PLAY | Replay through speaker; record both mics | Sends `'K'` ACK |
 | `'R'` (0x52) | CMD_RECORD | Record both mics (no playback) | Sends `'K'` ACK |
-| `'D'` (0x44) | CMD_DUMP | Stream `record_ram` (mic 1) as 4096×2 bytes | Streams bytes |
-| `'E'` (0x45) | CMD_DUMP2 | Stream `record2_ram` (mic 2) as 4096×2 bytes | Streams bytes |
+| `'D'` (0x44) | CMD_DUMP | Stream `record_ram` (mic 1) as 16384×2 bytes | Streams bytes |
+| `'E'` (0x45) | CMD_DUMP2 | Stream `record2_ram` (mic 2) as 16384×2 bytes | Streams bytes |
 
 Commands received while not in IDLE are silently ignored.
 
@@ -66,10 +66,10 @@ Commands received while not in IDLE are silently ignored.
 | CIC decimation | 64 (sinc³) per mic |
 | Sample rate | 48,828 Hz |
 | Sample width | 16-bit signed |
-| Buffer depth | 4096 samples per mic |
-| Record duration | ~84 ms |
+| Buffer depth | 16384 samples per mic |
+| Record duration | ~335 ms |
 | UART baud rate | 115200 8N1 |
-| Total BRAM | ~12 EBR blocks (3 buffers × 4 EBR) |
+| Total BRAM | ~48 EBR blocks (3 buffers × 16 EBR) |
 
 ## Hardware Wiring
 
@@ -104,61 +104,36 @@ Toolchain: Yosys · nextpnr-ecp5 · ecppack · icesprog · iverilog · verilator
 
 ## Usage
 
-### Full dual-mic HIL measurement with `hil_test.py`
+### Recording data with `fpgactrl`
+
+Use the Go CLI tool at `tools/fpgactrl/` for signal generation, upload, playback,
+recording, and CSV export:
 
 ```bash
-pip install pyserial numpy matplotlib
+# Full workflow: generate chirp → upload → play+record → dump → save CSV
+fpgactrl run --port /dev/ttyACM0 --signal chirp --save signals.csv
 
-# Log chirp (default): 200 Hz → 20 kHz sweep
-python3 hil_test.py /dev/ttyACM0
+# Record-only (no playback)
+fpgactrl run --port /dev/ttyACM0 --record-only --save quiet.csv
 
-# Impulse response
-python3 hil_test.py /dev/ttyACM0 --signal impulse
-
-# Save raw PCM + CSV
-python3 hil_test.py /dev/ttyACM0 --signal chirp --save
-
-# Background noise capture (no speaker output)
-python3 hil_test.py /dev/ttyACM0 --record-only
+# Generate signal offline (no hardware)
+fpgactrl gen --signal impulse --save impulse.csv
 ```
 
-The script uploads the test signal, triggers simultaneous play+record on both
-mics, downloads both buffers, and plots:
-- Played signal and overlaid mic recordings
-- Individual mic waveforms
-- Transfer functions |H1(f)| and |H2(f)| overlaid + dB difference
-- Cross-correlation with inter-mic delay estimate
-- Difference signal (mic 1 − mic 2)
+### Viewing and comparing signals with `hil_test.py`
 
-### Minimal Python snippet
+```bash
+pip install numpy matplotlib
 
-```python
-import serial, struct
-import numpy as np
+# View a single recording
+python3 hil_test.py signals.csv
 
-with serial.Serial('/dev/ttyACM0', 115_200, timeout=5) as s:
-    # Upload a 1 kHz sine
-    t = np.arange(4096) / 48828
-    sig = (np.sin(2 * np.pi * 1000 * t) * 0.9 * 32767).astype(np.int16)
-    s.write(b'U')
-    s.write(struct.pack('>4096h', *sig))
-    assert s.read(1) == b'K'
-
-    # Play + record both mics
-    s.write(b'P')
-    assert s.read(1) == b'K'
-
-    # Dump mic 1
-    s.write(b'D')
-    mic1 = struct.unpack('>4096h', s.read(8192))
-
-    # Dump mic 2
-    s.write(b'E')
-    mic2 = struct.unpack('>4096h', s.read(8192))
-
-    print(f"Mic 1 peak: {max(abs(x) for x in mic1)}")
-    print(f"Mic 2 peak: {max(abs(x) for x in mic2)}")
+# Compare multiple recordings — use checkboxes to select signals
+python3 hil_test.py with_headphones.csv without_headphones.csv
 ```
+
+The viewer shows time-domain waveforms and FFT magnitude plots with interactive
+checkboxes to toggle individual signals (e.g. mic1 from file 1, mic2 from file 2).
 
 ## Simulation
 

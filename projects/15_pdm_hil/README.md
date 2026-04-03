@@ -79,11 +79,11 @@ Each command byte transitions through RECV_CNT_HI → RECV_CNT_LO to collect the
 | CIC decimation | 64 (sinc³) |
 | Sample rate | 48,828 Hz |
 | Sample width | 16-bit signed |
-| Max buffer depth | 4096 samples |
-| Max record duration | ~84 ms |
-| Frequency resolution | ~11.9 Hz at N=4096 (Δf = Fs/N) |
+| Max buffer depth | 16384 samples |
+| Max record duration | ~335 ms |
+| Frequency resolution | ~3.0 Hz at N=16384 (Δf = Fs/N) |
 | UART baud rate | 115200 8N1 |
-| Upload/dump size | N×2 bytes (variable, max 8192) |
+| Upload/dump size | N×2 bytes (variable, max 32768) |
 
 ## Hardware Wiring
 
@@ -105,12 +105,12 @@ Same as project 10 (PDM mic + amp) plus the iCELink USB-CDC UART from project 14
 
 ### BRAM Buffers
 
-Two on-chip EBR block-RAM buffers, each 4096 × 16-bit (~65 kbits, ~4 EBR blocks):
+Two on-chip EBR block-RAM buffers, each 16384 × 16-bit (~262 kbits, ~16 EBR blocks):
 
 - **`replay_ram`** — written by UPLOAD (UART RX), read by PLAY_RECORD (PDM modulator)
 - **`record_ram`** — written by PLAY_RECORD or RECORD (CIC output), read by DUMP (UART TX)
 
-Total BRAM usage: ~8 EBR blocks out of 56 available on the ECP5-25F.
+Total BRAM usage: ~32 EBR blocks out of 56 available on the ECP5-25F.
 
 Both are inferred as EBR via the standard synchronous-write / synchronous-read (1-cycle latency) pattern.
 
@@ -171,7 +171,7 @@ import serial, struct
 import numpy as np
 
 SAMPLE_RATE = 48_828
-N = 4096  # number of samples (1..4096)
+N = 16384  # number of samples (1..16384)
 
 with serial.Serial('/dev/ttyACM0', 115_200, timeout=5) as s:
     # Upload a 1 kHz sine wave
@@ -200,14 +200,14 @@ recorded = struct.unpack(f'>{N}h', raw)
 ```bash
 PORT=/dev/ttyACM0
 
-# Upload silence (4096 samples = 8192 zero bytes), then record background noise
+# Upload silence (16384 samples = 32768 zero bytes), then record background noise
 # Each command is: cmd_byte + count_hi + count_lo + payload
-printf '\x55\x10\x00' > $PORT        # 'U' + count=4096 (0x1000)
-dd if=/dev/zero bs=8192 count=1 > $PORT; sleep 0.1
-printf '\x52\x10\x00' > $PORT        # 'R' + count=4096
-sleep 0.1
-printf '\x44\x10\x00' > $PORT        # 'D' + count=4096
-dd if=$PORT bs=8192 count=1 of=noise.pcm
+printf '\x55\x40\x00' > $PORT        # 'U' + count=16384 (0x4000)
+dd if=/dev/zero bs=32768 count=1 > $PORT; sleep 0.2
+printf '\x52\x40\x00' > $PORT        # 'R' + count=16384
+sleep 0.4
+printf '\x44\x40\x00' > $PORT        # 'D' + count=16384
+dd if=$PORT bs=32768 count=1 of=noise.pcm
 
 # Convert to WAV
 sox -r 48828 -e signed -b 16 -c 1 noise.pcm noise.wav
