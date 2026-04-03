@@ -9,11 +9,11 @@
 //
 // Test sequence:
 //   1. Reset
-//   2. Send 'U' and upload 4 known samples into the replay buffer
+//   2. Send 'U' + 2-byte count + 4 known samples into the replay buffer
 //   3. Receive and verify the 'K' ACK
-//   4. Drive mic_dat = 1 (all-ones PDM → maximum positive PCM) and send 'P'
+//   4. Drive mic_dat = 1 (all-ones PDM → maximum positive PCM) and send 'P' + count
 //   5. Wait for and verify the 'K' ACK (PLAY_RECORD runs 4 pcm_valid pulses)
-//   6. Send 'D', receive 8 bytes, verify all samples are non-zero
+//   6. Send 'D' + count, receive 8 bytes, verify all samples are non-zero
 //      (CIC output from all-ones PDM is positive after settling)
 //   7. Report PASS / FAIL
 
@@ -170,10 +170,12 @@ module pdm_hil_tb;
         end
 
         // ==================================================================
-        // Step 1: Upload 4 samples via 'U' command
+        // Step 1: Upload 4 samples via 'U' + 2-byte count command
         // ==================================================================
-        $display("[%0t] Sending CMD_UPLOAD ('U') + 4 samples", $time);
-        send_byte(8'h55);  // 'U'
+        $display("[%0t] Sending CMD_UPLOAD ('U') + %0d samples", $time, NUM_SAMPLES);
+        send_byte(8'h55);              // 'U'
+        send_byte(NUM_SAMPLES[15:8]);  // count HI
+        send_byte(NUM_SAMPLES[7:0]);   // count LO
 
         // Sample 0: 0x1000
         send_byte(SAMPLE0[15:8]);
@@ -215,7 +217,9 @@ module pdm_hil_tb;
         $display("[%0t] Sending CMD_PLAY ('P'), driving mic_dat=1", $time);
         mic_dat_r = 1'b1;  // All-ones PDM: will produce maximum positive PCM
 
-        send_byte(8'h50);  // 'P'
+        send_byte(8'h50);              // 'P'
+        send_byte(NUM_SAMPLES[15:8]);  // count HI
+        send_byte(NUM_SAMPLES[7:0]);   // count LO
 
         // Expect 'K' ACK after PLAY_RECORD finishes
         // (4 pcm_valid pulses @ 512 clocks each = 2048 clocks minimum;
@@ -236,7 +240,11 @@ module pdm_hil_tb;
         // ==================================================================
         $display("[%0t] Sending CMD_DUMP ('D')", $time);
         fork
-            send_byte(8'h44);  // 'D'
+            begin
+                send_byte(8'h44);              // 'D'
+                send_byte(NUM_SAMPLES[15:8]);  // count HI
+                send_byte(NUM_SAMPLES[7:0]);   // count LO
+            end
 
             begin : dump_recv
                 for (k = 0; k < NUM_SAMPLES; k = k + 1) begin
@@ -261,7 +269,9 @@ module pdm_hil_tb;
         // ==================================================================
         $display("[%0t] Sending CMD_RECORD ('R') with mic_dat=1", $time);
         mic_dat_r = 1'b1;
-        send_byte(8'h52);  // 'R'
+        send_byte(8'h52);              // 'R'
+        send_byte(NUM_SAMPLES[15:8]);  // count HI
+        send_byte(NUM_SAMPLES[7:0]);   // count LO
 
         recv_byte(rx_byte);
         if (rx_byte !== 8'h4B) begin

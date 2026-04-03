@@ -10,7 +10,7 @@ to compute the speaker-to-microphone transfer function H(f) on the host.
 
 ```
 Host PC
-  │  'U' + 8192 bytes
+  │  'U' N_HI N_LO + N×2 bytes
   ▼
 UART RX ──────────────────────────────────────► replay_ram [0:4095]
                                                       │
@@ -34,31 +34,29 @@ MP34DT01-M mic ──► 2-stage sync ──► CIC sinc³ (R=64) ──► pcm_
 
 ## UART Protocol (115200 8N1)
 
-| Byte | Command | Action | FPGA Response |
-|------|---------|--------|---------------|
-| `'U'` (0x55) | CMD_UPLOAD | Receive 4096×2 bytes (big-endian 16-bit) → `replay_ram` | Sends `'K'` (0x4B) ACK |
-| `'P'` (0x50) | CMD_PLAY | Replay `replay_ram` through speaker; record mic → `record_ram` | Sends `'K'` ACK |
-| `'R'` (0x52) | CMD_RECORD | Record mic only (no playback) → `record_ram` | Sends `'K'` ACK |
-| `'D'` (0x44) | CMD_DUMP | Stream `record_ram` as 4096×2 bytes (big-endian 16-bit) | Streams bytes |
+Every command byte is followed by a big-endian 16-bit sample count `N` (bytes `N_HI` then `N_LO`).
+Valid range: 1–`NUM_SAMPLES`.  A count of 0 or greater than `NUM_SAMPLES` is clamped to `NUM_SAMPLES`.
+
+| Bytes | Command | Action | FPGA Response |
+|-------|---------|--------|---------------|
+| `'U'` `N_HI` `N_LO` (0x55) | CMD_UPLOAD | Receive N×2 bytes (big-endian 16-bit) → `replay_ram` | Sends `'K'` (0x4B) ACK |
+| `'P'` `N_HI` `N_LO` (0x50) | CMD_PLAY | Replay N samples through speaker; record N mic samples → `record_ram` | Sends `'K'` ACK |
+| `'R'` `N_HI` `N_LO` (0x52) | CMD_RECORD | Record N mic samples (no playback) → `record_ram` | Sends `'K'` ACK |
+| `'D'` `N_HI` `N_LO` (0x44) | CMD_DUMP | Stream N samples from `record_ram` as N×2 bytes (big-endian 16-bit) | Streams bytes |
 
 Commands received while not in IDLE are silently ignored.
 
 ## State Machine
 
+Each command byte transitions through RECV_CNT_HI → RECV_CNT_LO to collect the
+2-byte sample count before entering the target state.
+
 ```
-         'U'                    all bytes received → 'K'
- IDLE ──────────► UPLOAD ──────────────────────────────────► IDLE
-  │                                                           │
-  │ 'R'                   all samples → 'K'                  │ 'P'
-  │                                                           │
-  ▼                                                           ▼
-RECORD ────────────────────────────────────────► IDLE    PLAY_RECORD ──────────► IDLE
-  (addr == NUM_SAMPLES-1)                                  (addr == NUM_SAMPLES-1 → 'K')
-                                                               │
-                              'D'                              │
-                               ▼                               │
-                              DUMP ──────────────► IDLE ◄──────┘
-                              (all bytes sent)
+         cmd byte              count HI          count LO
+ IDLE ──────────► RECV_CNT_HI ──────────► RECV_CNT_LO ──────┬──► UPLOAD ──► IDLE ('K')
+                                                              ├──► PLAY_RECORD ──► IDLE ('K')
+                                                              ├──► RECORD ──► IDLE ('K')
+                                                              └──► DUMP ──► IDLE
 ```
 
 ## LED Indicators (active-low)
@@ -81,12 +79,11 @@ RECORD ────────────────────────�
 | CIC decimation | 64 (sinc³) |
 | Sample rate | 48,828 Hz |
 | Sample width | 16-bit signed |
-| Buffer depth | 4096 samples |
-| Record duration | ~84 ms |
-| Frequency resolution | ~11.9 Hz (Δf = Fs/N) |
+| Max buffer depth | 4096 samples |
+| Max record duration | ~84 ms |
+| Frequency resolution | ~11.9 Hz at N=4096 (Δf = Fs/N) |
 | UART baud rate | 115200 8N1 |
-| Upload/dump size | 8192 bytes |
-| Upload/dump time | ~711 ms |
+| Upload/dump size | N×2 bytes (variable, max 8192) |
 
 ## Hardware Wiring
 
@@ -170,29 +167,32 @@ impulse response h(t), and a spectrogram of the recorded signal.
 ### Minimal Python snippet
 
 ```python
-import serial, struct, time
+import serial, struct
+import numpy as np
 
 SAMPLE_RATE = 48_828
-NUM_SAMPLES = 4096
+N = 4096  # number of samples (1..4096)
 
 with serial.Serial('/dev/ttyACM0', 115_200, timeout=5) as s:
     # Upload a 1 kHz sine wave
-    import numpy as np
-    t = np.arange(NUM_SAMPLES) / SAMPLE_RATE
+    t = np.arange(N) / SAMPLE_RATE
     sig = (np.sin(2 * np.pi * 1000 * t) * 0.9 * 32767).astype(np.int16)
-    payload = struct.pack(f'>{NUM_SAMPLES}h', *sig)
+    payload = struct.pack(f'>{N}h', *sig)
 
     s.write(b'U')
+    s.write(struct.pack('>H', N))   # sample count (big-endian 16-bit)
     s.write(payload)
     assert s.read(1) == b'K', "Upload ACK missing"
 
     s.write(b'P')
+    s.write(struct.pack('>H', N))
     assert s.read(1) == b'K', "Play ACK missing"
 
     s.write(b'D')
-    raw = s.read(NUM_SAMPLES * 2)   # 8192 bytes
+    s.write(struct.pack('>H', N))
+    raw = s.read(N * 2)
 
-recorded = struct.unpack(f'>{NUM_SAMPLES}h', raw)
+recorded = struct.unpack(f'>{N}h', raw)
 ```
 
 ### Command-line (Linux)
@@ -200,10 +200,14 @@ recorded = struct.unpack(f'>{NUM_SAMPLES}h', raw)
 ```bash
 PORT=/dev/ttyACM0
 
-# Upload silence (8192 zero bytes), then record background noise
-printf '\x55' > $PORT; dd if=/dev/zero bs=8192 count=1 > $PORT; sleep 0.1
-printf '\x52' > $PORT; sleep 0.1   # CMD_RECORD
-printf '\x44' > $PORT; dd if=$PORT bs=8192 count=1 of=noise.pcm
+# Upload silence (4096 samples = 8192 zero bytes), then record background noise
+# Each command is: cmd_byte + count_hi + count_lo + payload
+printf '\x55\x10\x00' > $PORT        # 'U' + count=4096 (0x1000)
+dd if=/dev/zero bs=8192 count=1 > $PORT; sleep 0.1
+printf '\x52\x10\x00' > $PORT        # 'R' + count=4096
+sleep 0.1
+printf '\x44\x10\x00' > $PORT        # 'D' + count=4096
+dd if=$PORT bs=8192 count=1 of=noise.pcm
 
 # Convert to WAV
 sox -r 48828 -e signed -b 16 -c 1 noise.pcm noise.wav

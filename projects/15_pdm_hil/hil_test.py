@@ -128,17 +128,19 @@ def open_port(port, baud):
 def upload(ser, samples_i16, verbose=True):
     """Upload signed int16 array to the FPGA replay buffer.
 
-    Sends 'U' followed by len(samples_i16)*2 bytes (big-endian).
+    Sends 'U' + 2-byte big-endian count + len(samples_i16)*2 bytes.
     Waits for 'K' ACK.
     """
-    payload = struct.pack(f">{len(samples_i16)}h", *samples_i16)
+    n = len(samples_i16)
+    payload = struct.pack(f">{n}h", *samples_i16)
     if verbose:
         print(
-            f"Uploading {len(samples_i16)} samples ({len(payload)} bytes)...",
+            f"Uploading {n} samples ({len(payload)} bytes)...",
             end=" ",
             flush=True,
         )
     ser.write(CMD_UPLOAD)
+    ser.write(struct.pack(">H", n))
     ser.write(payload)
     ack = ser.read(1)
     if not ack or ack[0] != ACK_BYTE:
@@ -147,11 +149,12 @@ def upload(ser, samples_i16, verbose=True):
         print("ACK OK")
 
 
-def play_record(ser, verbose=True):
-    """Trigger PLAY_RECORD on the FPGA.  Wait for 'K' ACK."""
+def play_record(ser, n=NUM_SAMPLES, verbose=True):
+    """Trigger PLAY_RECORD on the FPGA for n samples.  Wait for 'K' ACK."""
     if verbose:
-        print("Playing and recording...", end=" ", flush=True)
+        print(f"Playing and recording {n} samples...", end=" ", flush=True)
     ser.write(CMD_PLAY)
+    ser.write(struct.pack(">H", n))
     ack = ser.read(1)
     if not ack or ack[0] != ACK_BYTE:
         raise RuntimeError(f"Play ACK not received (got {ack!r})")
@@ -159,11 +162,12 @@ def play_record(ser, verbose=True):
         print("ACK OK")
 
 
-def record_only(ser, verbose=True):
-    """Trigger mic-only recording on the FPGA.  Wait for 'K' ACK."""
+def record_only(ser, n=NUM_SAMPLES, verbose=True):
+    """Trigger mic-only recording on the FPGA for n samples.  Wait for 'K' ACK."""
     if verbose:
-        print("Recording (no playback)...", end=" ", flush=True)
+        print(f"Recording {n} samples (no playback)...", end=" ", flush=True)
     ser.write(CMD_RECORD)
+    ser.write(struct.pack(">H", n))
     ack = ser.read(1)
     if not ack or ack[0] != ACK_BYTE:
         raise RuntimeError(f"Record ACK not received (got {ack!r})")
@@ -172,13 +176,14 @@ def record_only(ser, verbose=True):
 
 
 def dump(ser, n=NUM_SAMPLES, verbose=True):
-    """Download the record buffer from the FPGA.
+    """Download n samples from the FPGA record buffer.
 
     Returns signed int16 NumPy array of length n.
     """
     if verbose:
         print(f"Dumping {n} samples ({n*2} bytes)...", end=" ", flush=True)
     ser.write(CMD_DUMP)
+    ser.write(struct.pack(">H", n))
     raw = ser.read(n * 2)
     if len(raw) != n * 2:
         raise RuntimeError(f"Dump underrun: expected {n*2} bytes, got {len(raw)}")
@@ -407,16 +412,18 @@ def main():
     try:
         if args.record_only:
             # Background noise capture (no playback)
-            record_only(ser)
-            recorded_i16 = dump(ser)
+            n = NUM_SAMPLES
+            record_only(ser, n)
+            recorded_i16 = dump(ser, n)
             print(
                 f"Peak recorded amplitude: {np.abs(recorded_i16).max() / FULL_SCALE:.4f}"
             )
         else:
             # Full HIL measurement
+            n = len(played_i16)
             upload(ser, played_i16)
-            play_record(ser)
-            recorded_i16 = dump(ser)
+            play_record(ser, n)
+            recorded_i16 = dump(ser, n)
 
             print(
                 f"Peak played amplitude:    {np.abs(played_i16).max() / FULL_SCALE:.4f}"

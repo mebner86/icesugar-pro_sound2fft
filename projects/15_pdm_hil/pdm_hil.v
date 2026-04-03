@@ -12,14 +12,19 @@
 //   4. Host computes H(f) = FFT(recorded) / FFT(played).
 //
 // UART protocol (115200 8N1):
-//   'U' (0x55) CMD_UPLOAD  — receive NUM_SAMPLES×2 bytes (big-endian 16-bit)
-//                            into replay_ram; send 'K' (0x4B) ACK when done.
-//   'P' (0x50) CMD_PLAY    — replay replay_ram through speaker while recording
-//                            mic into record_ram; send 'K' ACK when done.
-//   'R' (0x52) CMD_RECORD  — record mic only (no playback) into record_ram;
-//                            send 'K' ACK when done.
-//   'D' (0x44) CMD_DUMP    — stream record_ram as NUM_SAMPLES×2 bytes
-//                            (big-endian 16-bit); no trailing ACK.
+//   Every command byte is followed by a big-endian 16-bit sample count N
+//   (bytes N_HI then N_LO).  Valid range: 1..NUM_SAMPLES.  A count of 0 or
+//   greater than NUM_SAMPLES is clamped to NUM_SAMPLES.
+//
+//   'U' (0x55) N_HI N_LO  CMD_UPLOAD  — receive N×2 bytes (big-endian 16-bit)
+//                                        into replay_ram; send 'K' (0x4B) ACK.
+//   'P' (0x50) N_HI N_LO  CMD_PLAY    — replay N samples from replay_ram while
+//                                        recording N mic samples into record_ram;
+//                                        send 'K' ACK when done.
+//   'R' (0x52) N_HI N_LO  CMD_RECORD  — record N mic samples (no playback) into
+//                                        record_ram; send 'K' ACK when done.
+//   'D' (0x44) N_HI N_LO  CMD_DUMP    — stream N samples from record_ram as N×2
+//                                        bytes (big-endian 16-bit); no trailing ACK.
 //
 // Commands arriving while not in IDLE are silently ignored.
 //
@@ -32,9 +37,9 @@
 `default_nettype none
 
 module pdm_hil #(
-    parameter integer CLK_FREQ   = 25_000_000,  // System clock frequency in Hz
-    parameter integer BAUD_RATE  = 115_200,      // UART baud rate
-    parameter integer NUM_SAMPLES = 4096         // Replay and record buffer depth
+    parameter integer CLK_FREQ    = 25_000_000,  // System clock frequency in Hz
+    parameter integer BAUD_RATE   = 115_200,      // UART baud rate
+    parameter integer NUM_SAMPLES = 4096          // Replay and record buffer depth
 ) (
     input  wire clk_25m,
     input  wire rst_n,
@@ -144,9 +149,8 @@ module pdm_hil #(
     // BRAM buffers (inferred as ECP5 EBR via synchronous read/write)
     // =========================================================================
     localparam ADDR_BITS = $clog2(NUM_SAMPLES);
-    // Sized localparam keeps comparisons width-matched (same pattern as uart_tx.v)
     /* verilator lint_off WIDTHTRUNC */
-    localparam [ADDR_BITS:0] LAST_ADDR = NUM_SAMPLES - 1;
+    localparam [ADDR_BITS:0] DEF_SAMPLE_LAST = NUM_SAMPLES - 1;
     /* verilator lint_on WIDTHTRUNC */
 
     // Replay buffer: written by UPLOAD, read by PLAY_RECORD
@@ -165,6 +169,8 @@ module pdm_hil #(
     localparam S_PLAY_RECORD = 3'd2;
     localparam S_RECORD      = 3'd3;
     localparam S_DUMP        = 3'd4;
+    localparam S_RECV_CNT_HI = 3'd5;  // Receiving high byte of sample count
+    localparam S_RECV_CNT_LO = 3'd6;  // Receiving low byte of sample count
 
     localparam CMD_UPLOAD = 8'h55;  // 'U'
     localparam CMD_PLAY   = 8'h50;  // 'P'
@@ -173,7 +179,23 @@ module pdm_hil #(
     localparam ACK_BYTE   = 8'h4B;  // 'K'
 
     reg [2:0]          state;
-    reg [ADDR_BITS:0]  addr_cnt;    // One extra bit to detect NUM_SAMPLES exactly
+    reg [ADDR_BITS:0]  addr_cnt;     // Sample address counter
+
+    // Runtime sample count: programmed via the 2-byte count prefix of each
+    // command.  sample_last = effective_count - 1 (termination value for addr_cnt).
+    reg [ADDR_BITS:0]  sample_last;
+    reg [2:0]          next_state_r; // Target state after count bytes received
+    reg [7:0]          count_hi_r;   // MSB of incoming sample count
+
+    // Combinational assembly of the incoming 16-bit count.
+    // Valid only while rx_valid is asserted in S_RECV_CNT_LO.
+    wire [15:0]        rx_count_full = {count_hi_r, rx_data};
+    /* verilator lint_off WIDTHTRUNC */
+    wire [ADDR_BITS:0] rx_count_clamped =
+        (rx_count_full == 16'h0000 || rx_count_full > NUM_SAMPLES)
+        ? NUM_SAMPLES[ADDR_BITS:0]
+        : rx_count_full[ADDR_BITS:0];
+    /* verilator lint_on WIDTHTRUNC */
 
     // Upload byte assembly
     reg        upload_high;        // 1 = waiting for MSB, 0 = waiting for LSB
@@ -240,6 +262,9 @@ module pdm_hil #(
         if (!rst_n) begin
             state          <= S_IDLE;
             addr_cnt       <= 0;
+            sample_last    <= DEF_SAMPLE_LAST;
+            next_state_r   <= S_IDLE;
+            count_hi_r     <= 8'h00;
             upload_high    <= 1'b1;
             upload_hi_byte <= 8'h00;
             dump_high      <= 1'b0;
@@ -254,27 +279,27 @@ module pdm_hil #(
             case (state)
 
                 // -------------------------------------------------------------
+                // Wait for command byte then go to S_RECV_CNT_HI to collect the
+                // 2-byte sample count before dispatching to the target state.
+                // -------------------------------------------------------------
                 S_IDLE: begin
                     if (rx_valid) begin
                         case (rx_data)
                             CMD_UPLOAD: begin
-                                addr_cnt    <= 0;
-                                upload_high <= 1'b1;
-                                state       <= S_UPLOAD;
+                                next_state_r <= S_UPLOAD;
+                                state        <= S_RECV_CNT_HI;
                             end
                             CMD_PLAY: begin
-                                addr_cnt <= 0;
-                                state    <= S_PLAY_RECORD;
+                                next_state_r <= S_PLAY_RECORD;
+                                state        <= S_RECV_CNT_HI;
                             end
                             CMD_RECORD: begin
-                                addr_cnt <= 0;
-                                state    <= S_RECORD;
+                                next_state_r <= S_RECORD;
+                                state        <= S_RECV_CNT_HI;
                             end
                             CMD_DUMP: begin
-                                addr_cnt  <= 0;
-                                dump_high <= 1'b1;
-                                dump_init <= 1'b1;  // Prefetch first word
-                                state     <= S_DUMP;
+                                next_state_r <= S_DUMP;
+                                state        <= S_RECV_CNT_HI;
                             end
                             default: ;  // Ignore unknown commands
                         endcase
@@ -282,8 +307,39 @@ module pdm_hil #(
                 end
 
                 // -------------------------------------------------------------
-                // Receive NUM_SAMPLES big-endian 16-bit words from UART.
-                // Two bytes per sample: MSB first (upload_high=1), then LSB (upload_high=0).
+                // Receive high byte of the 2-byte sample count.
+                // -------------------------------------------------------------
+                S_RECV_CNT_HI: begin
+                    if (rx_valid) begin
+                        count_hi_r <= rx_data;
+                        state      <= S_RECV_CNT_LO;
+                    end
+                end
+
+                // -------------------------------------------------------------
+                // Receive low byte of the 2-byte sample count.  Assemble, clamp
+                // to [1..NUM_SAMPLES], store sample_last, initialise per-state
+                // bookkeeping, then transition to the target state.
+                // -------------------------------------------------------------
+                S_RECV_CNT_LO: begin
+                    if (rx_valid) begin
+                        sample_last <= rx_count_clamped - 1;
+                        addr_cnt    <= 0;
+                        case (next_state_r)
+                            S_UPLOAD: upload_high <= 1'b1;
+                            S_DUMP: begin
+                                dump_high <= 1'b1;
+                                dump_init <= 1'b1;  // Prefetch first word
+                            end
+                            default: ;
+                        endcase
+                        state <= next_state_r;
+                    end
+                end
+
+                // -------------------------------------------------------------
+                // Receive N big-endian 16-bit words from UART.
+                // Two bytes per sample: MSB first (upload_high=1), then LSB.
                 // Write to replay_ram on LSB receipt.
                 // ACK with 'K' when complete; return to IDLE.
                 // -------------------------------------------------------------
@@ -297,7 +353,7 @@ module pdm_hil #(
                             // LSB received: word is now {upload_hi_byte, rx_data}
                             // (BRAM write handled in separate always block above)
                             upload_high <= 1'b1;
-                            if (addr_cnt == LAST_ADDR) begin
+                            if (addr_cnt == sample_last) begin
                                 // Last sample written — send ACK and return to IDLE
                                 tx_data_r  <= ACK_BYTE;
                                 tx_valid_r <= 1'b1;
@@ -321,7 +377,7 @@ module pdm_hil #(
                     if (pcm_valid) begin
                         // pcm_held is updated from replay_word in the separate
                         // always block; record_ram write handled above.
-                        if (addr_cnt == LAST_ADDR) begin
+                        if (addr_cnt == sample_last) begin
                             tx_data_r  <= ACK_BYTE;
                             tx_valid_r <= 1'b1;
                             addr_cnt   <= 0;
@@ -339,7 +395,7 @@ module pdm_hil #(
                 // -------------------------------------------------------------
                 S_RECORD: begin
                     if (pcm_valid) begin
-                        if (addr_cnt == LAST_ADDR) begin
+                        if (addr_cnt == sample_last) begin
                             tx_data_r  <= ACK_BYTE;
                             tx_valid_r <= 1'b1;
                             addr_cnt   <= 0;
@@ -367,7 +423,7 @@ module pdm_hil #(
                         end else begin
                             tx_data_r  <= dump_word[7:0];   // LSB second
                             tx_valid_r <= 1'b1;
-                            if (addr_cnt == LAST_ADDR) begin
+                            if (addr_cnt == sample_last) begin
                                 addr_cnt <= 0;
                                 state    <= S_IDLE;
                             end else begin
