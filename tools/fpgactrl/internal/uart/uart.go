@@ -12,13 +12,13 @@ import (
 
 // Protocol constants (must match Verilog).
 const (
-	CmdUpload  = 'U'
-	CmdPlay    = 'P'
-	CmdRecord  = 'R'
-	CmdDump    = 'D'
-	CmdDump2   = 'E'
-	AckByte    = 'K'
-	Timeout    = 5 * time.Second
+	CmdUpload = 'U'
+	CmdPlay   = 'P'
+	CmdRecord = 'R'
+	CmdDump   = 'D'
+	CmdDump2  = 'E'
+	AckByte   = 'K'
+	Timeout   = 5 * time.Second
 )
 
 // OpenPort opens and flushes a serial port.
@@ -47,13 +47,23 @@ func readACK(r io.Reader) error {
 	return nil
 }
 
+// writeCount sends a big-endian 16-bit sample count.
+func writeCount(w io.Writer, n int) error {
+	var buf [2]byte
+	binary.BigEndian.PutUint16(buf[:], uint16(n))
+	_, err := w.Write(buf[:])
+	return err
+}
+
 // Upload sends samples to the FPGA replay buffer.
+// Sends: CmdUpload + 2-byte count + big-endian int16 payload.
 func Upload(rw io.ReadWriter, samples []int16) error {
-	// Send command byte
 	if _, err := rw.Write([]byte{CmdUpload}); err != nil {
 		return fmt.Errorf("sending upload command: %w", err)
 	}
-	// Send big-endian int16 payload
+	if err := writeCount(rw, len(samples)); err != nil {
+		return fmt.Errorf("sending upload count: %w", err)
+	}
 	payload := make([]byte, len(samples)*2)
 	for i, s := range samples {
 		binary.BigEndian.PutUint16(payload[i*2:], uint16(s))
@@ -64,18 +74,24 @@ func Upload(rw io.ReadWriter, samples []int16) error {
 	return readACK(rw)
 }
 
-// PlayRecord triggers play+record and waits for ACK.
-func PlayRecord(rw io.ReadWriter) error {
+// PlayRecord triggers play+record for n samples and waits for ACK.
+func PlayRecord(rw io.ReadWriter, n int) error {
 	if _, err := rw.Write([]byte{CmdPlay}); err != nil {
 		return fmt.Errorf("sending play command: %w", err)
+	}
+	if err := writeCount(rw, n); err != nil {
+		return fmt.Errorf("sending play count: %w", err)
 	}
 	return readACK(rw)
 }
 
-// RecordOnly triggers mic-only recording and waits for ACK.
-func RecordOnly(rw io.ReadWriter) error {
+// RecordOnly triggers mic-only recording for n samples and waits for ACK.
+func RecordOnly(rw io.ReadWriter, n int) error {
 	if _, err := rw.Write([]byte{CmdRecord}); err != nil {
 		return fmt.Errorf("sending record command: %w", err)
+	}
+	if err := writeCount(rw, n); err != nil {
+		return fmt.Errorf("sending record count: %w", err)
 	}
 	return readACK(rw)
 }
@@ -93,6 +109,9 @@ func Dump2(rw io.ReadWriter, n int) ([]int16, error) {
 func dumpCmd(rw io.ReadWriter, cmd byte, n int) ([]int16, error) {
 	if _, err := rw.Write([]byte{cmd}); err != nil {
 		return nil, fmt.Errorf("sending dump command: %w", err)
+	}
+	if err := writeCount(rw, n); err != nil {
+		return nil, fmt.Errorf("sending dump count: %w", err)
 	}
 	raw := make([]byte, n*2)
 	if _, err := io.ReadFull(rw, raw); err != nil {

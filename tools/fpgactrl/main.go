@@ -12,8 +12,8 @@ Usage:
   fpgactrl <command> [flags]
 
 Commands:
-  run    Full workflow: generate → upload → play+record → dump → save
-  gen    Generate test signal and save to CSV (no hardware)
+  run    Upload a CSV signal, play+record, and dump results
+  gen    Generate a test signal and save to CSV (no hardware)
 
 Run 'fpgactrl <command> -h' for command-specific help.
 `
@@ -39,10 +39,11 @@ func cmdRun(args []string) {
 	fs := flag.NewFlagSet("run", flag.ExitOnError)
 	port := fs.String("port", "", "Serial port (e.g. /dev/ttyACM0) (required)")
 	baud := fs.Int("baud", 115200, "UART baud rate")
-	signal := fs.String("signal", "chirp", "Signal type: chirp|impulse|sin|sin-delayed")
-	amplitude := fs.Float64("amplitude", 0.9, "Peak amplitude 0.0–1.0")
-	save := fs.String("save", "", "Save signals to CSV file")
-	recordOnly := fs.Bool("record-only", false, "Record without playback")
+	input := fs.String("input", "", "Input CSV file with 'played' column (required unless -record-only)")
+	mics := fs.Int("mics", 1, "Number of microphones: 1 or 2")
+	recordSamples := fs.Int("record-samples", 0, "Override record/dump sample count (default: same as upload count)")
+	save := fs.String("save", "", "Save output signals to CSV file")
+	recordOnly := fs.Bool("record-only", false, "Record without playback (-input not needed)")
 	fs.Parse(args)
 
 	if *port == "" {
@@ -50,8 +51,17 @@ func cmdRun(args []string) {
 		fs.Usage()
 		os.Exit(1)
 	}
+	if !*recordOnly && *input == "" {
+		fmt.Fprintln(os.Stderr, "error: -input is required (or use -record-only)")
+		fs.Usage()
+		os.Exit(1)
+	}
+	if *mics != 1 && *mics != 2 {
+		fmt.Fprintln(os.Stderr, "error: -mics must be 1 or 2")
+		os.Exit(1)
+	}
 
-	if err := runWorkflow(*port, *baud, *signal, *amplitude, *save, *recordOnly); err != nil {
+	if err := runWorkflow(*port, *baud, *input, *mics, *recordSamples, *save, *recordOnly); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
